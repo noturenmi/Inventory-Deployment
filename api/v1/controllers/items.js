@@ -11,6 +11,7 @@ exports.getAllItems = async (req, res) => {
       data: items
     });
   } catch (error) {
+    console.error("Error getting items:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"
@@ -35,6 +36,7 @@ exports.getItemById = async (req, res) => {
       data: item
     });
   } catch (error) {
+    console.error("Error getting item:", error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -51,6 +53,8 @@ exports.getItemById = async (req, res) => {
 // POST create new item
 exports.createItem = async (req, res) => {
   try {
+    console.log("Creating item with data:", req.body);
+    
     // Check if supplier exists
     if (req.body.supplier) {
       const supplier = await Supplier.findById(req.body.supplier);
@@ -65,11 +69,13 @@ exports.createItem = async (req, res) => {
     const item = new Item(req.body);
     await item.save();
     
+    console.log("Item created successfully:", item);
     res.status(201).json({
       success: true,
       data: item
     });
   } catch (error) {
+    console.error("Error creating item:", error);
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -104,6 +110,7 @@ exports.updateItem = async (req, res) => {
       data: item
     });
   } catch (error) {
+    console.error("Error updating item:", error);
     res.status(400).json({
       success: false,
       error: error.message
@@ -132,6 +139,7 @@ exports.partialUpdateItem = async (req, res) => {
       data: item
     });
   } catch (error) {
+    console.error("Error partially updating item:", error);
     res.status(400).json({
       success: false,
       error: error.message
@@ -156,6 +164,7 @@ exports.deleteItem = async (req, res) => {
       message: "Item deleted successfully"
     });
   } catch (error) {
+    console.error("Error deleting item:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"
@@ -197,6 +206,7 @@ exports.searchItems = async (req, res) => {
       data: items
     });
   } catch (error) {
+    console.error("Error searching items:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"
@@ -213,6 +223,7 @@ exports.getCategories = async (req, res) => {
       data: categories
     });
   } catch (error) {
+    console.error("Error getting categories:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"
@@ -266,6 +277,7 @@ exports.getInventoryReport = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("Error getting inventory report:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"

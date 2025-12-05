@@ -37,18 +37,6 @@ const itemSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, "Description cannot exceed 500 characters"]
   },
-  sku: {
-    type: String,
-    trim: true,
-    uppercase: true,
-    unique: true,
-    sparse: true
-  },
-  reorderLevel: {
-    type: Number,
-    default: 5,
-    min: [0, "Reorder level cannot be negative"]
-  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -64,9 +52,6 @@ itemSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
-// Create index for search
-itemSchema.index({ name: 'text', category: 'text', description: 'text' });
 
 const Item = mongoose.model("Item", itemSchema);
 

@@ -15,34 +15,17 @@ const supplierSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    trim: true,
-    match: [/^[\+]?[1-9][\d]{0,15}$/, "Please enter a valid phone number"]
+    trim: true
   },
   email: {
     type: String,
     trim: true,
-    lowercase: true,
-    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email"]
+    lowercase: true
   },
   address: {
     type: String,
     trim: true,
     maxlength: [200, "Address cannot exceed 200 characters"]
-  },
-  website: {
-    type: String,
-    trim: true,
-    match: [/^https?:\/\/.+/, "Please enter a valid website URL"]
-  },
-  status: {
-    type: String,
-    enum: ["Active", "Inactive", "Pending"],
-    default: "Active"
-  },
-  paymentTerms: {
-    type: String,
-    enum: ["Net 30", "Net 60", "COD", "Advance"],
-    default: "Net 30"
   },
   createdAt: {
     type: Date,
@@ -59,9 +42,6 @@ supplierSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
-// Create index for search
-supplierSchema.index({ name: 'text', email: 'text' });
 
 const Supplier = mongoose.model("Supplier", supplierSchema);
 

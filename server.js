@@ -1,151 +1,96 @@
-// ==============================
-// Inventory API v1.0
-// Node.js + Express + MongoDB + Swagger
-// Deployable to Vercel
-// ==============================
-
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-const swaggerUi = require("swagger-ui-express");
-const YAML = require("yamljs");
 
-// Import routes
-const v1Routes = require("./api/v1/routes");
-
-// Create Express app
 const app = express();
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
 
-// ==============================
-// Security Middleware
-// ==============================
-app.use(helmet()); // Security headers
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  credentials: true
-}));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: { error: "Too many requests, please try again later." }
-});
-app.use(limiter);
-
-// Body parsing middleware
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// ==============================
 // MongoDB Connection
-// ==============================
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/inventory_db";
-let isConnected = false;
 
-async function connectToDatabase() {
-  if (isConnected) return;
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log("âœ… MongoDB Connected"))
+  .catch(err => console.error("âŒ MongoDB Connection Error:", err));
 
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = mongoose.connection.readyState === 1;
-    console.log("âœ… MongoDB Connected Successfully");
-  } catch (error) {
-    console.error("âŒ MongoDB Connection Error:", error.message);
-    process.exit(1);
-  }
-}
-
-// Connection events
-mongoose.connection.on("error", (err) => {
-  console.error("âŒ MongoDB Connection Error:", err);
+// Define schemas
+const itemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  category: { type: String, default: "General" },
+  stock: { type: Number, default: 0 },
+  price: { type: Number, default: 0 },
+  supplier: String
 });
 
-mongoose.connection.on("disconnected", () => {
-  console.log("âš ï¸ MongoDB Disconnected");
-  isConnected = false;
+const supplierSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  contact: String,
+  phone: String,
+  email: String,
+  address: String
 });
 
-// ==============================
-// Swagger Documentation
-// ==============================
-const swaggerDocument = YAML.load("./api/v1/docs/swagger.yaml");
-app.use("/api/v1/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // Additional route
+const Item = mongoose.model("Item", itemSchema);
+const Supplier = mongoose.model("Supplier", supplierSchema);
 
-// ==============================
-// API Routes
-// ==============================
-app.use("/api/v1", v1Routes);
-
-// Root endpoint
+// Routes
 app.get("/", (req, res) => {
   res.json({
-    message: "ðŸ“¦ Inventory Management API",
-    version: "1.0.0",
-    documentation: "/api/v1/api-docs",
-    endpoints: {
-      items: "/api/v1/items",
-      suppliers: "/api/v1/suppliers",
-      categories: "/api/v1/categories",
-      reports: "/api/v1/reports/inventory"
-    }
+    message: "í³¦ Inventory API is running!",
+    endpoints: [
+      "GET /api/v1/items",
+      "POST /api/v1/items",
+      "GET /api/v1/suppliers",
+      "POST /api/v1/suppliers"
+    ]
   });
 });
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    database: isConnected ? "Connected" : "Disconnected"
-  });
+// Items
+app.get("/api/v1/items", async (req, res) => {
+  try {
+    const items = await Item.find();
+    res.json({ success: true, data: items });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// ==============================
-// Error Handling Middleware
-// ==============================
-app.use((req, res, next) => {
-  res.status(404).json({
-    error: "Not Found",
-    message: `Cannot ${req.method} ${req.url}`
-  });
+app.post("/api/v1/items", async (req, res) => {
+  try {
+    const item = new Item(req.body);
+    await item.save();
+    res.status(201).json({ success: true, data: item });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
-app.use((err, req, res, next) => {
-  console.error("ðŸ”¥ Error:", err.stack);
-  
-  const statusCode = err.status || 500;
-  const message = err.message || "Internal Server Error";
-  
-  res.status(statusCode).json({
-    error: "Server Error",
-    message: message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+// Suppliers
+app.get("/api/v1/suppliers", async (req, res) => {
+  try {
+    const suppliers = await Supplier.find();
+    res.json({ success: true, data: suppliers });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// ==============================
-// Server Configuration
-// ==============================
+app.post("/api/v1/suppliers", async (req, res) => {
+  try {
+    const supplier = new Supplier(req.body);
+    await supplier.save();
+    res.status(201).json({ success: true, data: supplier });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
-
-// Start server only if not in Vercel
-if (require.main === module) {
-  connectToDatabase().then(() => {
-    app.listen(PORT, () => {
-      console.log(`ðŸš€ Server running on http://localhost:${PORT}`);
-      console.log(`ðŸ“š API Documentation: http://localhost:${PORT}/api/v1/api-docs`);
-    });
-  }).catch(console.error);
-}
-
-// Export for Vercel serverless
-module.exports = app;
+app.listen(PORT, () => {
+  console.log(`íº€ Server running on http://localhost:${PORT}`);
+});

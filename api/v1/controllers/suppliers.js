@@ -11,7 +11,6 @@ exports.getAllSuppliers = async (req, res) => {
       data: suppliers
     });
   } catch (error) {
-    console.error("Error getting suppliers:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"
@@ -31,7 +30,6 @@ exports.getSupplierById = async (req, res) => {
       });
     }
     
-    // Get items from this supplier
     const items = await Item.find({ supplier: supplier._id });
     
     res.status(200).json({
@@ -42,7 +40,6 @@ exports.getSupplierById = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Error getting supplier:", error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -59,17 +56,14 @@ exports.getSupplierById = async (req, res) => {
 // POST create new supplier
 exports.createSupplier = async (req, res) => {
   try {
-    console.log("Creating supplier with data:", req.body);
     const supplier = new Supplier(req.body);
     await supplier.save();
     
-    console.log("Supplier created successfully:", supplier);
     res.status(201).json({
       success: true,
       data: supplier
     });
   } catch (error) {
-    console.error("Error creating supplier:", error);
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -104,7 +98,6 @@ exports.updateSupplier = async (req, res) => {
       data: supplier
     });
   } catch (error) {
-    console.error("Error updating supplier:", error);
     res.status(400).json({
       success: false,
       error: error.message
@@ -133,7 +126,6 @@ exports.partialUpdateSupplier = async (req, res) => {
       data: supplier
     });
   } catch (error) {
-    console.error("Error partially updating supplier:", error);
     res.status(400).json({
       success: false,
       error: error.message
@@ -144,7 +136,6 @@ exports.partialUpdateSupplier = async (req, res) => {
 // DELETE supplier
 exports.deleteSupplier = async (req, res) => {
   try {
-    // Check if supplier has items
     const itemsCount = await Item.countDocuments({ supplier: req.params.id });
     
     if (itemsCount > 0) {
@@ -168,7 +159,6 @@ exports.deleteSupplier = async (req, res) => {
       message: "Supplier deleted successfully"
     });
   } catch (error) {
-    console.error("Error deleting supplier:", error);
     res.status(500).json({
       success: false,
       error: "Server Error"

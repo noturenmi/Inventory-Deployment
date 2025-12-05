@@ -3,25 +3,12 @@ const router = express.Router();
 const itemController = require("../controllers/items");
 const validation = require("../middleware/validation");
 
-// GET all items
 router.get("/", itemController.getAllItems);
-
-// GET single item
-router.get("/:id", itemController.getItemById);
-
-// POST create new item
+router.get("/:id", validation.validateId, itemController.getItemById);
 router.post("/", validation.validateItem, itemController.createItem);
-
-// PUT update entire item
-router.put("/:id", validation.validateItem, itemController.updateItem);
-
-// PATCH partial update
-router.patch("/:id", validation.validateItemPartial, itemController.partialUpdateItem);
-
-// DELETE item
-router.delete("/:id", itemController.deleteItem);
-
-// Search items
+router.put("/:id", validation.validateId, validation.validateItem, itemController.updateItem);
+router.patch("/:id", validation.validateId, validation.validateItem, itemController.partialUpdateItem);
+router.delete("/:id", validation.validateId, itemController.deleteItem);
 router.get("/search", itemController.searchItems);
 
 module.exports = router;

@@ -2,292 +2,65 @@ openapi: 3.0.0
 info:
   title: Inventory Management API
   version: 1.0.0
-  description: RESTful API for managing inventory items and suppliers
-  contact:
-    name: API Support
-    email: support@inventoryapi.com
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+  description: RESTful API for managing inventory
 
 servers:
-  - url: https://inventory-api.vercel.app/api/v1
-    description: Production server
   - url: http://localhost:3000/api/v1
-    description: Local development server
+    description: Development server
 
 paths:
   /items:
     get:
       summary: Get all items
-      tags: [Items]
       responses:
         200:
-          description: List of all items
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  count:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Item'
-    
+          description: List of items
     post:
-      summary: Create a new item
-      tags: [Items]
+      summary: Create item
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ItemInput'
-            example:
-              name: "Laptop"
-              category: "Electronics"
-              stock: 10
-              price: 999.99
-              supplier: "60d21b4667d0d8992e610c85"
-              description: "High-performance laptop"
-      responses:
-        201:
-          description: Item created successfully
-        400:
-          description: Bad request - validation error
-
+              type: object
+              properties:
+                name: { type: string }
+                category: { type: string }
+                stock: { type: number }
+                price: { type: number }
+                supplier: { type: string }
+  
   /items/{id}:
     get:
-      summary: Get a single item by ID
-      tags: [Items]
+      summary: Get item by ID
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Item details
-        404:
-          description: Item not found
-    
+          schema: { type: string }
     put:
-      summary: Update an entire item
-      tags: [Items]
+      summary: Update item
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ItemInput'
-      responses:
-        200:
-          description: Item updated
-        404:
-          description: Item not found
-    
-    patch:
-      summary: Partially update an item
-      tags: [Items]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ItemPartialUpdate'
-      responses:
-        200:
-          description: Item partially updated
-        404:
-          description: Item not found
-    
     delete:
-      summary: Delete an item
-      tags: [Items]
+      summary: Delete item
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Item deleted
-        404:
-          description: Item not found
-
+  
   /suppliers:
     get:
       summary: Get all suppliers
-      tags: [Suppliers]
-      responses:
-        200:
-          description: List of all suppliers
-    
     post:
-      summary: Create a new supplier
-      tags: [Suppliers]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SupplierInput'
-            example:
-              name: "Tech Supplies Inc."
-              contact: "John Doe"
-              phone: "+1234567890"
-              email: "contact@techsupplies.com"
-              address: "123 Tech Street, City, Country"
-      responses:
-        201:
-          description: Supplier created successfully
-
+      summary: Create supplier
+  
   /categories:
     get:
       summary: Get all categories
-      tags: [Items]
-      responses:
-        200:
-          description: List of all categories
-
+  
   /reports/inventory:
     get:
       summary: Get inventory report
-      tags: [Reports]
-      responses:
-        200:
-          description: Inventory summary and statistics
-
-components:
-  schemas:
-    Item:
-      type: object
-      properties:
-        _id:
-          type: string
-        name:
-          type: string
-        category:
-          type: string
-        stock:
-          type: integer
-        price:
-          type: number
-        supplier:
-          $ref: '#/components/schemas/Supplier'
-        description:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    
-    ItemInput:
-      type: object
-      required: [name, category, stock, price, supplier]
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 100
-        category:
-          type: string
-          enum: [Electronics, Clothing, Food, Books, General, Office Supplies]
-        stock:
-          type: integer
-          minimum: 0
-        price:
-          type: number
-          minimum: 0
-        supplier:
-          type: string
-          description: Supplier ID
-        description:
-          type: string
-          maxLength: 500
-    
-    ItemPartialUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 100
-        category:
-          type: string
-          enum: [Electronics, Clothing, Food, Books, General, Office Supplies]
-        stock:
-          type: integer
-          minimum: 0
-        price:
-          type: number
-          minimum: 0
-        supplier:
-          type: string
-    
-    Supplier:
-      type: object
-      properties:
-        _id:
-          type: string
-        name:
-          type: string
-        contact:
-          type: string
-        phone:
-          type: string
-        email:
-          type: string
-        address:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    
-    SupplierInput:
-      type: object
-      required: [name]
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 100
-        contact:
-          type: string
-          maxLength: 100
-        phone:
-          type: string
-        email:
-          type: string
-          format: email
-        address:
-          type: string
-          maxLength: 200
-
-securitySchemes:
-  ApiKeyAuth:
-    type: apiKey
-    in: header
-    name: X-API-Key

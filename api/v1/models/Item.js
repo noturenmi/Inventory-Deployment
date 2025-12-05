@@ -5,8 +5,7 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: [true, "Item name is required"],
     trim: true,
-    maxlength: [100, "Item name cannot exceed 100 characters"],
-    unique: true
+    maxlength: [100, "Item name cannot exceed 100 characters"]
   },
   category: {
     type: String,
@@ -47,12 +46,11 @@ const itemSchema = new mongoose.Schema({
   }
 });
 
-// Update timestamps on save
+// Update timestamps
 itemSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
 const Item = mongoose.model("Item", itemSchema);
-
 module.exports = Item;

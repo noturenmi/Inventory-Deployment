@@ -37,12 +37,11 @@ const supplierSchema = new mongoose.Schema({
   }
 });
 
-// Update timestamps on save
+// Update timestamps
 supplierSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
 const Supplier = mongoose.model("Supplier", supplierSchema);
-
 module.exports = Supplier;

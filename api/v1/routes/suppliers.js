@@ -3,22 +3,11 @@ const router = express.Router();
 const supplierController = require("../controllers/suppliers");
 const validation = require("../middleware/validation");
 
-// GET all suppliers
 router.get("/", supplierController.getAllSuppliers);
-
-// GET single supplier
-router.get("/:id", supplierController.getSupplierById);
-
-// POST create new supplier
+router.get("/:id", validation.validateId, supplierController.getSupplierById);
 router.post("/", validation.validateSupplier, supplierController.createSupplier);
-
-// PUT update entire supplier
-router.put("/:id", validation.validateSupplier, supplierController.updateSupplier);
-
-// PATCH partial update
-router.patch("/:id", validation.validateSupplierPartial, supplierController.partialUpdateSupplier);
-
-// DELETE supplier
-router.delete("/:id", supplierController.deleteSupplier);
+router.put("/:id", validation.validateId, validation.validateSupplier, supplierController.updateSupplier);
+router.patch("/:id", validation.validateId, validation.validateSupplier, supplierController.partialUpdateSupplier);
+router.delete("/:id", validation.validateId, supplierController.deleteSupplier);
 
 module.exports = router;

@@ -1,4 +1,3 @@
-// ==================== IMPORTS ====================
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -6,30 +5,48 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const swaggerUi = require("swagger-ui-express");
-const path = require("path");
 
-// Create Express app
 const app = express();
 
-// ==================== MIDDLEWARE ====================
+// ==================== CORS CONFIGURATION ====================
+// IMPORTANT: Configure CORS properly for Swagger UI
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://zentinels-inventory-deployment.vercel.app',
+    'https://zentinels-inventory-deployment.vercel.app/api-docs'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+// ==================== OTHER MIDDLEWARE ====================
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  skip: (req) => req.path.includes('/api-docs') || req.path.includes('/swagger.json'),
   message: {
     success: false,
-    error: "Too many requests, please try again later."
+    error: "Too many requests"
   }
 });
-app.use(limiter);
+app.use("/api/", limiter);
 
 // ==================== DATABASE CONNECTION ====================
 const MONGODB_URI = process.env.MONGODB_URI;
-
 if (MONGODB_URI) {
   mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
@@ -37,8 +54,6 @@ if (MONGODB_URI) {
   })
   .then(() => console.log("âœ… MongoDB Connected"))
   .catch(err => console.error("âŒ MongoDB Error:", err.message));
-} else {
-  console.log("âš ï¸ MONGODB_URI not set in .env");
 }
 
 // ==================== SIMPLE SCHEMAS ====================
@@ -69,52 +84,75 @@ const Supplier = mongoose.model("Supplier", supplierSchema);
 let swaggerDocument;
 try {
   swaggerDocument = require('./swagger.json');
+  
+  // IMPORTANT: Update servers in swagger document for local testing
+  swaggerDocument.servers = [
+    {
+      url: "http://localhost:3000",
+      description: "Local Development Server"
+    },
+    {
+      url: "https://zentinels-inventory-deployment.vercel.app",
+      description: "Production Server (Vercel)"
+    }
+  ];
+  
   console.log("âœ… Swagger documentation loaded");
 } catch (error) {
-  console.log("âš ï¸ Could not load swagger.json, using basic docs");
+  console.log("âš ï¸ Using basic Swagger docs");
   swaggerDocument = {
     openapi: "3.0.0",
     info: {
       title: "Inventory API",
-      version: "1.0.0",
-      description: "Inventory Management API"
+      version: "1.0.0"
     },
     servers: [
       {
         url: "http://localhost:3000",
         description: "Local server"
-      },
-      {
-        url: "https://zentinels-inventory-deployment.vercel.app",
-        description: "Production server"
       }
     ],
-    paths: {
-      "/": {
-        get: {
-          summary: "API Root",
-          responses: {
-            "200": {
-              description: "API information"
-            }
-          }
-        }
-      }
-    }
+    paths: {}
   };
 }
 
-// Swagger UI options
+// Swagger UI options - IMPORTANT FOR CORS
 const swaggerOptions = {
   explorer: true,
+  swaggerOptions: {
+    urls: [
+      {
+        url: '/swagger.json',
+        name: 'Inventory API v1'
+      }
+    ],
+    validatorUrl: null, // Disable validator to prevent CORS issues
+    docExpansion: 'list',
+    filter: true,
+    tryItOutEnabled: true,
+    displayRequestDuration: true,
+    requestInterceptor: (req) => {
+      // This helps with local testing
+      if (req.url.startsWith('/')) {
+        req.url = `http://localhost:3000${req.url}`;
+      }
+      return req;
+    }
+  },
+  customCss: `
+    .swagger-ui .topbar { display: none }
+    .try-out { display: block !important }
+  `,
   customSiteTitle: "Inventory API Documentation"
 };
 
 // Serve Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
 
-// Serve raw Swagger JSON
+// Serve raw Swagger JSON with CORS headers
 app.get("/swagger.json", (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.json(swaggerDocument);
 });
 
@@ -154,7 +192,7 @@ app.get("/api/v1/items", async (req, res) => {
         success: true,
         count: 0,
         data: [],
-        message: "Database not connected - using mock data"
+        message: "Database not connected"
       });
     }
     const items = await Item.find();
@@ -324,6 +362,43 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`íº€ Server running on http://localhost:${PORT}`);
   console.log(`í³š Documentation: http://localhost:${PORT}/api-docs`);
+  console.log(`í¼ CORS enabled for: http://localhost:${PORT}, https://zentinels-inventory-deployment.vercel.app`);
 });
 
 module.exports = app;
+
+// Serve fixed Swagger HTML
+app.get("/swagger-fixed", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Inventory API - Fixed Swagger</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui.css">
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-bundle.js"></script>
+        <script>
+        window.onload = function() {
+            const apiUrl = window.location.origin;
+            
+            const ui = SwaggerUIBundle({
+                url: apiUrl + '/swagger.json',
+                dom_id: '#swagger-ui',
+                presets: [SwaggerUIBundle.presets.apis],
+                layout: "BaseLayout",
+                requestInterceptor: function(request) {
+                    if (request.url.startsWith('/')) {
+                        request.url = apiUrl + request.url;
+                    }
+                    return request;
+                }
+            });
+            window.ui = ui;
+        };
+        </script>
+    </body>
+    </html>
+  `);
+});

@@ -15,61 +15,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(helmet());
+// Configure Helmet for Swagger UI compatibility
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"]
+    }
+  }
+}));
+
 app.use(express.json());
 app.options('*', cors());
-
-// ==================== SIMPLE SWAGGER ====================
-// Simple Swagger UI (no file needed)
-app.get("/api-docs", (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Inventory API Docs</title>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui.css">
-    </head>
-    <body>
-      <div id="swagger-ui"></div>
-      <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
-      <script>
-        SwaggerUIBundle({
-          url: "/swagger.json", // or your swagger.json path
-          dom_id: '#swagger-ui',
-          presets: [
-            SwaggerUIBundle.presets.apis,
-            SwaggerUIStandalonePreset
-          ],
-          layout: "BaseLayout"
-        });
-      </script>
-    </body>
-    </html>
-  `);
-});
-
-// If you have a swagger.json file
-app.get("/swagger.json", (req, res) => {
-  res.json({
-    openapi: "3.0.0",
-    info: {
-      title: "Inventory API",
-      version: "1.0.0",
-      description: "API for inventory management"
-    },
-    servers: [{ url: "http://localhost:3000" }],
-    paths: {
-      "/api/v1/items": {
-        get: { summary: "Get all items" },
-        post: { summary: "Create item" }
-      },
-      "/api/v1/suppliers": {
-        get: { summary: "Get all suppliers" },
-        post: { summary: "Create supplier" }
-      }
-    }
-  });
-});
 
 // ==================== DATABASE CONNECTION ====================
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -83,33 +43,105 @@ if (MONGODB_URI) {
   .catch(err => console.error("❌ MongoDB Error:", err.message));
 }
 
-// ==================== SWAGGER DOCUMENTATION ====================
-// Serve the HTML file directly
+// ==================== SIMPLE SWAGGER UI ====================
+// Simple inline Swagger UI (no external file needed)
 app.get("/api-docs", (req, res) => {
-  try {
-    const html = fs.readFileSync(path.join(__dirname, 'swagger.html'), 'utf8');
-    res.send(html);
-  } catch (error) {
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Inventory API Docs</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui.css">
-      </head>
-      <body>
-        <div id="swagger-ui"></div>
-        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
-        <script>
-          SwaggerUIBundle({
-            spec: {openapi:"3.0.0",info:{title:"Inventory API",version:"1.0.0"},servers:[{url:"http://localhost:3000"}]},
-            dom_id: '#swagger-ui'
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Inventory API Documentation</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui.css">
+      <style>
+        html { box-sizing: border-box; overflow-y: scroll; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; background: #fafafa; }
+        .swagger-ui .topbar { display: none; }
+      </style>
+    </head>
+    <body>
+      <div id="swagger-ui"></div>
+      <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-standalone-preset.js"></script>
+      <script>
+        window.onload = function() {
+          // Use a default OpenAPI spec
+          const spec = {
+            openapi: "3.0.0",
+            info: {
+              title: "Inventory Management API",
+              version: "1.0.0",
+              description: "API for managing inventory items and suppliers"
+            },
+            servers: [
+              {
+                url: "http://localhost:${process.env.PORT || 3000}",
+                description: "Development server"
+              }
+            ],
+            paths: {
+              "/api/v1/items": {
+                get: {
+                  summary: "Get all items",
+                  responses: {
+                    "200": { description: "List of items" }
+                  }
+                },
+                post: {
+                  summary: "Create new item",
+                  responses: {
+                    "201": { description: "Item created" }
+                  }
+                }
+              },
+              "/api/v1/items/{id}": {
+                get: {
+                  summary: "Get item by ID",
+                  parameters: [{
+                    name: "id",
+                    in: "path",
+                    required: true,
+                    schema: { type: "string" }
+                  }],
+                  responses: {
+                    "200": { description: "Item details" }
+                  }
+                }
+              },
+              "/api/v1/suppliers": {
+                get: {
+                  summary: "Get all suppliers",
+                  responses: {
+                    "200": { description: "List of suppliers" }
+                  }
+                },
+                post: {
+                  summary: "Create new supplier",
+                  responses: {
+                    "201": { description: "Supplier created" }
+                  }
+                }
+              }
+            }
+          };
+          
+          // Initialize Swagger UI
+          window.ui = SwaggerUIBundle({
+            spec: spec,
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout"
           });
-        </script>
-      </body>
-      </html>
-    `);
-  }
+        };
+      </script>
+    </body>
+    </html>
+  `);
 });
 
 app.get("/docs", (req, res) => {
@@ -142,7 +174,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ✅ IMPORTANT: Use your route files instead of defining routes here
+// Use your route files
 const apiRoutes = require("./api/v1/routes/index");
 app.use("/api/v1", apiRoutes);
 

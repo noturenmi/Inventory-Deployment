@@ -1,0 +1,648 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Inventory Management API",
+    "version": "1.0.0",
+    "description": "í³¦ Complete REST API for managing inventory items and suppliers",
+    "contact": {
+      "name": "API Support",
+      "email": "support@inventory.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://zentinels-inventory-deployment.vercel.app",
+      "description": "Production Server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Items",
+      "description": "Operations related to inventory items"
+    },
+    {
+      "name": "Suppliers",
+      "description": "Operations related to suppliers"
+    },
+    {
+      "name": "Reports",
+      "description": "Inventory reports and analytics"
+    },
+    {
+      "name": "Categories",
+      "description": "Item category management"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "API Root",
+        "description": "Get API information and available endpoints",
+        "tags": ["Info"],
+        "responses": {
+          "200": {
+            "description": "API information",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "í³¦ Inventory API is running!",
+                  "version": "1.0.0",
+                  "endpoints": {
+                    "items": "/api/v1/items",
+                    "suppliers": "/api/v1/suppliers",
+                    "categories": "/api/v1/categories",
+                    "reports": "/api/v1/reports/inventory",
+                    "health": "/health",
+                    "docs": "/api-docs"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check API health status",
+        "tags": ["Info"],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "healthy",
+                  "timestamp": "2024-01-15T10:30:00Z",
+                  "service": "Inventory API"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items": {
+      "get": {
+        "summary": "Get all items",
+        "description": "Retrieve a list of all inventory items",
+        "tags": ["Items"],
+        "responses": {
+          "200": {
+            "description": "List of items retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "count": 2,
+                  "data": [
+                    {
+                      "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                      "name": "Laptop",
+                      "category": "Electronics",
+                      "stock": 10,
+                      "price": 999.99,
+                      "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
+                      "createdAt": "2024-01-15T10:30:00Z"
+                    },
+                    {
+                      "_id": "64f8a1b2c9d3e7f5a2b1c3d6",
+                      "name": "Desk Chair",
+                      "category": "Office Supplies",
+                      "stock": 5,
+                      "price": 149.99,
+                      "supplier": "64f8a1b2c9d3e7f5a2b1c3d7",
+                      "createdAt": "2024-01-15T11:30:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new item",
+        "description": "Add a new item to the inventory",
+        "tags": ["Items"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "category", "stock", "price", "supplier"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Wireless Mouse"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Electronics",
+                    "enum": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"]
+                  },
+                  "stock": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 50
+                  },
+                  "price": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 25.99
+                  },
+                  "supplier": {
+                    "type": "string",
+                    "example": "64f8a1b2c9d3e7f5a2b1c3d8"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Wireless optical mouse with USB receiver"
+                  }
+                }
+              },
+              "example": {
+                "name": "Wireless Mouse",
+                "category": "Electronics",
+                "stock": 50,
+                "price": 25.99,
+                "supplier": "64f8a1b2c9d3e7f5a2b1c3d8",
+                "description": "Wireless optical mouse with USB receiver"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item created successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "_id": "64f8a1b2c9d3e7f5a2b1c3d9",
+                    "name": "Wireless Mouse",
+                    "category": "Electronics",
+                    "stock": 50,
+                    "price": 25.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d8",
+                    "description": "Wireless optical mouse with USB receiver",
+                    "createdAt": "2024-01-15T12:30:00Z",
+                    "updatedAt": "2024-01-15T12:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "error": "Item name is required"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}": {
+      "get": {
+        "summary": "Get item by ID",
+        "description": "Retrieve a specific item by its ID",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Item ID",
+            "schema": {
+              "type": "string"
+            },
+            "example": "64f8a1b2c9d3e7f5a2b1c3d4"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                    "name": "Laptop",
+                    "category": "Electronics",
+                    "stock": 10,
+                    "price": 999.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
+                    "createdAt": "2024-01-15T10:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "error": "Item not found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update entire item",
+        "description": "Replace all fields of an existing item",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "Updated Laptop",
+                "category": "Electronics",
+                "stock": 15,
+                "price": 1099.99,
+                "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
+                "description": "Updated description"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item updated successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                    "name": "Updated Laptop",
+                    "category": "Electronics",
+                    "stock": 15,
+                    "price": 1099.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
+                    "description": "Updated description",
+                    "updatedAt": "2024-01-15T13:30:00Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Partially update item",
+        "description": "Update specific fields of an item",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "stock": 20,
+                "price": 949.99
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item partially updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete item",
+        "description": "Remove an item from inventory",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item deleted successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Item deleted successfully"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
+    },
+    "/api/v1/suppliers": {
+      "get": {
+        "summary": "Get all suppliers",
+        "description": "Retrieve a list of all suppliers",
+        "tags": ["Suppliers"],
+        "responses": {
+          "200": {
+            "description": "List of suppliers",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "count": 2,
+                  "data": [
+                    {
+                      "_id": "64f8a1b2c9d3e7f5a2b1c3d5",
+                      "name": "Tech Supplies Inc.",
+                      "contact": "John Doe",
+                      "phone": "+1-555-123-4567",
+                      "email": "contact@techsupplies.com",
+                      "address": "123 Tech Street, San Francisco",
+                      "createdAt": "2024-01-10T09:00:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create new supplier",
+        "description": "Add a new supplier to the system",
+        "tags": ["Suppliers"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Office Depot"
+                  },
+                  "contact": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+1-555-987-6543"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "sales@officedepot.com"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "456 Office Ave, New York"
+                  }
+                }
+              },
+              "example": {
+                "name": "Office Depot",
+                "contact": "Jane Smith",
+                "phone": "+1-555-987-6543",
+                "email": "sales@officedepot.com",
+                "address": "456 Office Ave, New York"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Supplier created successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/suppliers/{id}": {
+      "get": {
+        "summary": "Get supplier by ID",
+        "tags": ["Suppliers"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supplier found"
+          },
+          "404": {
+            "description": "Supplier not found"
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "summary": "Get all categories",
+        "description": "Retrieve a list of all item categories",
+        "tags": ["Categories"],
+        "responses": {
+          "200": {
+            "description": "List of categories",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/inventory": {
+      "get": {
+        "summary": "Get inventory report",
+        "description": "Get comprehensive inventory statistics and analytics",
+        "tags": ["Reports"],
+        "responses": {
+          "200": {
+            "description": "Inventory report",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "summary": {
+                      "totalItems": 10,
+                      "totalStock": 150,
+                      "totalValue": 25000.50
+                    },
+                    "byCategory": [
+                      {
+                        "category": "Electronics",
+                        "itemCount": 5,
+                        "totalStock": 50,
+                        "totalValue": 20000
+                      },
+                      {
+                        "category": "Office Supplies",
+                        "itemCount": 3,
+                        "totalStock": 75,
+                        "totalValue": 1500.50
+                      }
+                    ],
+                    "lowStock": [
+                      {
+                        "id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                        "name": "Laptop",
+                        "stock": 2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Item name"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"]
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "supplier": {
+            "type": "string",
+            "description": "Supplier ID"
+          },
+          "description": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Supplier": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contact": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "address": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "example": "Error message"
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "info": {
     "title": "Inventory Management System API",
     "version": "1.0.0",
-    "description": "## Ì≥¶ Complete REST API for Inventory Management\n\nA comprehensive API for managing inventory items, suppliers, categories, and generating inventory reports. Built with Node.js, Express, MongoDB, and deployed on Vercel.\n\n### ÌæØ Features\n- **CRUD Operations** for Items and Suppliers\n- **Search & Filter** capabilities\n- **Inventory Analytics** and reporting\n- **Input Validation** and error handling\n- **Rate Limiting** and security\n- **Swagger Documentation** with interactive testing\n\n### Ìª†Ô∏è Technologies\n- **Backend**: Node.js, Express.js\n- **Database**: MongoDB Atlas\n- **ODM**: Mongoose\n- **Validation**: express-validator\n- **Security**: Helmet.js, CORS\n- **Documentation**: Swagger/OpenAPI 3.0\n- **Deployment**: Vercel\n\n### Ì¥ó Quick Links\n- [GitHub Repository](#)\n- [Live API Demo](https://zentinels-inventory-deployment.vercel.app)\n- [Postman Collection](#)\n\n### Ì≥û Support\nFor issues or questions, please contact the development team.",
+    "description": "This API allows you to manage an inventory system, including items, suppliers, categories, and reports. It provides endpoints to create, read, update, and delete inventory items, as well as generate reports and perform searches.",
     "termsOfService": "https://zentinels-inventory-deployment.vercel.app/terms",
     "contact": {
       "name": "API Support Team",
@@ -74,7 +74,7 @@
                   "$ref": "#/components/schemas/ApiInfo"
                 },
                 "example": {
-                  "message": "Ì≥¶ Inventory Management API v1.0",
+                  "message": "ÔøΩÔøΩÔøΩ Inventory Management API v1.0",
                   "version": "1.0.0",
                   "documentation": "https://zentinels-inventory-deployment.vercel.app/api-docs",
                   "endpoints": {

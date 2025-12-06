@@ -1,38 +1,58 @@
-const { body, param, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 
-exports.validateItem = [
-  body('name').trim().notEmpty().withMessage('Item name is required'),
-  body('category').trim().notEmpty().withMessage('Category is required'),
-  body('stock').isInt({ min: 0 }).withMessage('Stock must be non-negative'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be non-negative'),
-  body('supplier').isMongoId().withMessage('Invalid supplier ID'),
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
+exports.validateId = (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      error: "Invalid ID format"
+    });
   }
-];
+  next();
+};
 
-exports.validateSupplier = [
-  body('name').trim().notEmpty().withMessage('Supplier name is required'),
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
+exports.validateItem = (req, res, next) => {
+  const { name, category, stock, price } = req.body;
+  
+  if (!name || !category) {
+    return res.status(400).json({
+      success: false,
+      error: "Name and category are required"
+    });
   }
-];
+  
+  if (stock !== undefined && (isNaN(stock) || stock < 0)) {
+    return res.status(400).json({
+      success: false,
+      error: "Stock must be a positive number"
+    });
+  }
+  
+  if (price !== undefined && (isNaN(price) || price < 0)) {
+    return res.status(400).json({
+      success: false,
+      error: "Price must be a positive number"
+    });
+  }
+  
+  next();
+};
 
-exports.validateId = [
-  param('id').isMongoId().withMessage('Invalid ID format'),
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
+exports.validateSupplier = (req, res, next) => {
+  const { name, contact, phone, email } = req.body;
+  
+  if (!name) {
+    return res.status(400).json({
+      success: false,
+      error: "Supplier name is required"
+    });
   }
-];
+  
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({
+      success: false,
+      error: "Invalid email format"
+    });
+  }
+  
+  next();
+};

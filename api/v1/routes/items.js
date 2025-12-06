@@ -1,14 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const itemController = require("../controllers/items");
-const validation = require("../middleware/validation");
+// REMOVE THIS LINE: const validation = require("../middleware/validation");
 
 router.get("/", itemController.getAllItems);
-router.get("/:id", validation.validateId, itemController.getItemById);
-router.post("/", validation.validateItem, itemController.createItem);
-router.put("/:id", validation.validateId, validation.validateItem, itemController.updateItem);
-router.patch("/:id", validation.validateId, validation.validateItem, itemController.partialUpdateItem);
-router.delete("/:id", validation.validateId, itemController.deleteItem);
-router.get("/search", itemController.searchItems);
+router.get("/:id", itemController.getItemById); // Removed: validation.validateId
+router.post("/", itemController.createItem); // Removed: validation.validateItem
+router.put("/:id", itemController.updateItem); // Removed validation
+router.patch("/:id", itemController.partialUpdateItem); // Removed validation
+router.delete("/:id", itemController.deleteItem); // Removed: validation.validateId
+
+// Add these routes here
+router.get("/search/all", itemController.searchItems);
+router.get("/categories/all", itemController.getCategories);
+router.get("/reports/inventory", itemController.getInventoryReport);
 
 module.exports = router;

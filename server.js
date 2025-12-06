@@ -3,17 +3,28 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-const path = require("path");
 
 const app = express();
 
-// ==================== MIDDLEWARE ====================
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+// ==================== CORS CONFIGURATION ====================
+// This is the MOST IMPORTANT PART - Fix CORS for Swagger UI
+const corsOptions = {
+  origin: '*', // Allow ALL origins for now
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 
-// Serve static files from 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+// ==================== OTHER MIDDLEWARE ====================
+app.use(helmet());
+app.use(express.json());
 
 // ==================== DATABASE CONNECTION ====================
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -25,6 +36,8 @@ if (MONGODB_URI) {
   })
   .then(() => console.log("âœ… MongoDB Connected"))
   .catch(err => console.error("âŒ MongoDB Error:", err.message));
+} else {
+  console.log("âš ï¸ MONGODB_URI not set, running without database");
 }
 
 // ==================== SIMPLE SCHEMAS ====================
@@ -240,14 +253,224 @@ app.get("/api/v1/reports/inventory", async (req, res) => {
 });
 
 // ==================== SWAGGER DOCUMENTATION ====================
-// Serve Swagger HTML directly
+// Serve Swagger UI from CDN (NO CORS issues this way)
 app.get("/api-docs", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'swagger.html'));
-});
-
-// Also serve at root docs path
-app.get("/docs", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'swagger.html'));
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Inventory API Documentation</title>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui.css">
+        <style>
+            html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+            *, *:before, *:after { box-sizing: inherit; }
+            body { margin: 0; background: #fafafa; }
+            .swagger-ui .topbar { display: none; }
+            .swagger-ui .info { margin: 20px 0; }
+            .swagger-ui .info .title { font-size: 36px; }
+        </style>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-standalone-preset.js"></script>
+        <script>
+        window.onload = function() {
+            // Get current host
+            const host = window.location.origin;
+            
+            // Swagger specification
+            const spec = {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Inventory Management API",
+                    "version": "1.0.0",
+                    "description": "í³¦ Complete REST API for managing inventory items and suppliers"
+                },
+                "servers": [
+                    {
+                        "url": host,
+                        "description": "Current Server"
+                    },
+                    {
+                        "url": "https://zentinels-inventory-deployment.vercel.app",
+                        "description": "Production Server"
+                    },
+                    {
+                        "url": "http://localhost:3000",
+                        "description": "Local Development"
+                    }
+                ],
+                "tags": [
+                    {
+                        "name": "Items",
+                        "description": "Operations related to inventory items"
+                    },
+                    {
+                        "name": "Suppliers",
+                        "description": "Operations related to suppliers"
+                    }
+                ],
+                "paths": {
+                    "/": {
+                        "get": {
+                            "summary": "API Root",
+                            "responses": {
+                                "200": {
+                                    "description": "API information"
+                                }
+                            }
+                        }
+                    },
+                    "/health": {
+                        "get": {
+                            "summary": "Health Check",
+                            "responses": {
+                                "200": {
+                                    "description": "API health status"
+                                }
+                            }
+                        }
+                    },
+                    "/api/v1/items": {
+                        "get": {
+                            "tags": ["Items"],
+                            "summary": "Get all items",
+                            "responses": {
+                                "200": {
+                                    "description": "List of items",
+                                    "content": {
+                                        "application/json": {
+                                            "example": {
+                                                "success": true,
+                                                "count": 2,
+                                                "data": [
+                                                    {
+                                                        "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                                                        "name": "Laptop",
+                                                        "category": "Electronics",
+                                                        "stock": 10,
+                                                        "price": 999.99,
+                                                        "supplier": "supplier_id",
+                                                        "createdAt": "2024-01-15T10:30:00Z"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "post": {
+                            "tags": ["Items"],
+                            "summary": "Create new item",
+                            "requestBody": {
+                                "required": true,
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "required": ["name", "category", "stock", "price", "supplier"],
+                                            "properties": {
+                                                "name": { "type": "string", "example": "Laptop" },
+                                                "category": { "type": "string", "example": "Electronics" },
+                                                "stock": { "type": "integer", "example": 10 },
+                                                "price": { "type": "number", "example": 999.99 },
+                                                "supplier": { "type": "string", "example": "supplier_id" },
+                                                "description": { "type": "string", "example": "High-performance laptop" }
+                                            }
+                                        },
+                                        "example": {
+                                            "name": "Laptop",
+                                            "category": "Electronics",
+                                            "stock": 10,
+                                            "price": 999.99,
+                                            "supplier": "supplier_id",
+                                            "description": "High-performance laptop"
+                                        }
+                                    }
+                                }
+                            },
+                            "responses": {
+                                "201": {
+                                    "description": "Item created",
+                                    "content": {
+                                        "application/json": {
+                                            "example": {
+                                                "success": true,
+                                                "data": {
+                                                    "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                                                    "name": "Laptop",
+                                                    "category": "Electronics",
+                                                    "stock": 10,
+                                                    "price": 999.99,
+                                                    "supplier": "supplier_id",
+                                                    "description": "High-performance laptop",
+                                                    "createdAt": "2024-01-15T10:30:00Z"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/api/v1/suppliers": {
+                        "get": {
+                            "tags": ["Suppliers"],
+                            "summary": "Get all suppliers",
+                            "responses": {
+                                "200": {
+                                    "description": "List of suppliers"
+                                }
+                            }
+                        },
+                        "post": {
+                            "tags": ["Suppliers"],
+                            "summary": "Create supplier",
+                            "requestBody": {
+                                "content": {
+                                    "application/json": {
+                                        "example": {
+                                            "name": "Tech Supplies Inc.",
+                                            "contact": "John Doe",
+                                            "email": "contact@tech.com"
+                                        }
+                                    }
+                                }
+                            },
+                            "responses": {
+                                "201": {
+                                    "description": "Supplier created"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Initialize Swagger UI
+            const ui = SwaggerUIBundle({
+                spec: spec,
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                layout: "StandaloneLayout",
+                validatorUrl: null, // Disable validator
+                displayRequestDuration: true,
+                docExpansion: 'list'
+            });
+            
+            window.ui = ui;
+        };
+        </script>
+    </body>
+    </html>
+  `);
 });
 
 // ==================== ERROR HANDLING ====================
@@ -265,7 +488,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`íº€ Server running on http://localhost:${PORT}`);
   console.log(`í³š Documentation: http://localhost:${PORT}/api-docs`);
-  console.log(`í³š Alternative: http://localhost:${PORT}/docs`);
+  console.log(`í´§ CORS enabled for all origins`);
 });
 
 module.exports = app;

@@ -1,38 +1,25 @@
 {
-  "openapi" : "3.0.4",
+  "openapi" : "3.0.0",
   "info" : {
-    "title" : "Inventory API",
-    "description" : "API for managing inventory, categories, items, and suppliers.",
+    "title" : "Inventory Management API",
+    "description" : "Complete API documentation for the Inventory Management System covering Categories, Items, and Suppliers.",
     "version" : "1.0.0"
   },
   "servers" : [ {
-    "url" : "https://virtserver.swaggerhub.com/newerauniversity-672/InventoryAPI/1.0.0",
-    "description" : "SwaggerHub API Auto Mocking"
+    "url" : "https://virtserver.swaggerhub.com/newerauniversity-672/InventoryAPI/1.0.0"
   }, {
-    "url" : "http://localhost:3000",
-    "description" : "Local server"
+    "url" : "http://localhost:3000"
   }, {
-    "url" : "https://zentiels-inventory.vercel.app",
-    "description" : "Production server"
-  } ],
-  "tags" : [ {
-    "name" : "Categories",
-    "description" : "CRUD operations for product categories"
-  }, {
-    "name" : "Items",
-    "description" : "CRUD operations for inventory items"
-  }, {
-    "name" : "Suppliers",
-    "description" : "CRUD operations for suppliers"
+    "url" : "https://zentiels-inventory.vercel.app"
   } ],
   "paths" : {
-    "/api/categories" : {
+    "/categories" : {
       "get" : {
         "tags" : [ "Categories" ],
         "summary" : "Get all categories",
         "responses" : {
           "200" : {
-            "description" : "List of categories",
+            "description" : "List of all categories.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -53,7 +40,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Category"
+                "$ref" : "#/components/schemas/CategoryInput"
               }
             }
           },
@@ -61,7 +48,7 @@
         },
         "responses" : {
           "201" : {
-            "description" : "Category created",
+            "description" : "Category successfully created.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -73,10 +60,10 @@
         }
       }
     },
-    "/api/categories/{id}" : {
+    "/categories/{id}" : {
       "get" : {
         "tags" : [ "Categories" ],
-        "summary" : "Get a category by ID",
+        "summary" : "Get category by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -84,12 +71,13 @@
           "style" : "simple",
           "explode" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "The ID of the category to retrieve."
           }
         } ],
         "responses" : {
           "200" : {
-            "description" : "Category found",
+            "description" : "The category object.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -99,13 +87,13 @@
             }
           },
           "404" : {
-            "description" : "Category not found"
+            "description" : "Category not found."
           }
         }
       },
       "put" : {
         "tags" : [ "Categories" ],
-        "summary" : "Update a category by ID",
+        "summary" : "Update category by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -120,7 +108,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Category"
+                "$ref" : "#/components/schemas/CategoryInput"
               }
             }
           },
@@ -128,7 +116,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Category updated",
+            "description" : "Category successfully updated.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -138,13 +126,13 @@
             }
           },
           "404" : {
-            "description" : "Category not found"
+            "description" : "Category not found."
           }
         }
       },
       "delete" : {
         "tags" : [ "Categories" ],
-        "summary" : "Delete a category by ID",
+        "summary" : "Delete category by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -157,18 +145,25 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Category deleted"
+            "description" : "Category deleted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/items" : {
+    "/items" : {
       "get" : {
         "tags" : [ "Items" ],
-        "summary" : "Get all inventory items",
+        "summary" : "Get all items",
         "responses" : {
           "200" : {
-            "description" : "List of items",
+            "description" : "List of all items.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -184,12 +179,12 @@
       },
       "post" : {
         "tags" : [ "Items" ],
-        "summary" : "Create a new inventory item",
+        "summary" : "Create a new item",
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Item"
+                "$ref" : "#/components/schemas/ItemInput"
               }
             }
           },
@@ -197,7 +192,7 @@
         },
         "responses" : {
           "201" : {
-            "description" : "Item created",
+            "description" : "Item successfully created.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -209,10 +204,10 @@
         }
       }
     },
-    "/api/items/{id}" : {
+    "/items/{id}" : {
       "get" : {
         "tags" : [ "Items" ],
-        "summary" : "Get an item by ID",
+        "summary" : "Get item by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -225,7 +220,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Item found",
+            "description" : "The item object.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -235,13 +230,13 @@
             }
           },
           "404" : {
-            "description" : "Item not found"
+            "description" : "Item not found."
           }
         }
       },
       "put" : {
         "tags" : [ "Items" ],
-        "summary" : "Update an item by ID",
+        "summary" : "Update item by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -256,7 +251,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Item"
+                "$ref" : "#/components/schemas/ItemInput"
               }
             }
           },
@@ -264,7 +259,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Item updated",
+            "description" : "Item successfully updated.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -274,13 +269,13 @@
             }
           },
           "404" : {
-            "description" : "Item not found"
+            "description" : "Item not found."
           }
         }
       },
       "delete" : {
         "tags" : [ "Items" ],
-        "summary" : "Delete an item by ID",
+        "summary" : "Delete item by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -293,18 +288,25 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Item deleted"
+            "description" : "Item deleted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_1"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/suppliers" : {
+    "/suppliers" : {
       "get" : {
         "tags" : [ "Suppliers" ],
         "summary" : "Get all suppliers",
         "responses" : {
           "200" : {
-            "description" : "List of suppliers",
+            "description" : "List of all suppliers.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -325,7 +327,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Supplier"
+                "$ref" : "#/components/schemas/SupplierInput"
               }
             }
           },
@@ -333,7 +335,7 @@
         },
         "responses" : {
           "201" : {
-            "description" : "Supplier created",
+            "description" : "Supplier successfully created.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -345,10 +347,10 @@
         }
       }
     },
-    "/api/suppliers/{id}" : {
+    "/suppliers/{id}" : {
       "get" : {
         "tags" : [ "Suppliers" ],
-        "summary" : "Get a supplier by ID",
+        "summary" : "Get supplier by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -361,7 +363,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Supplier found",
+            "description" : "The supplier object.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -371,13 +373,13 @@
             }
           },
           "404" : {
-            "description" : "Supplier not found"
+            "description" : "Supplier not found."
           }
         }
       },
       "put" : {
         "tags" : [ "Suppliers" ],
-        "summary" : "Update a supplier by ID",
+        "summary" : "Update supplier by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -392,7 +394,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Supplier"
+                "$ref" : "#/components/schemas/SupplierInput"
               }
             }
           },
@@ -400,7 +402,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "Supplier updated",
+            "description" : "Supplier successfully updated.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -410,13 +412,13 @@
             }
           },
           "404" : {
-            "description" : "Supplier not found"
+            "description" : "Supplier not found."
           }
         }
       },
       "delete" : {
         "tags" : [ "Suppliers" ],
-        "summary" : "Delete a supplier by ID",
+        "summary" : "Delete supplier by ID",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -429,7 +431,17 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Supplier deleted"
+            "description" : "Supplier deleted.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_2"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Supplier not found."
           }
         }
       }
@@ -437,70 +449,125 @@
   },
   "components" : {
     "schemas" : {
-      "Category" : {
+      "CategoryInput" : {
         "required" : [ "name" ],
         "type" : "object",
         "properties" : {
-          "_id" : {
-            "type" : "string",
-            "example" : "64a6c3b3e4f3b4f00123abcd"
-          },
           "name" : {
             "type" : "string",
+            "description" : "Name of the category.",
             "example" : "Electronics"
           }
         }
       },
-      "Item" : {
-        "required" : [ "categoryId", "name", "price", "quantity" ],
+      "Category" : {
+        "allOf" : [ {
+          "required" : [ "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string",
+              "description" : "Unique ID from the database (MongoDB ObjectId).",
+              "example" : "60c72b2f90b1c3001c876b4a"
+            }
+          }
+        }, {
+          "$ref" : "#/components/schemas/CategoryInput"
+        } ]
+      },
+      "SupplierInput" : {
+        "required" : [ "name" ],
         "type" : "object",
         "properties" : {
-          "_id" : {
-            "type" : "string",
-            "example" : "64a6c3b3e4f3b4f00123efgh"
-          },
           "name" : {
             "type" : "string",
-            "example" : "Laptop"
+            "description" : "Name of the Supplier.",
+            "example" : "Tech Distributor Inc."
           },
-          "categoryId" : {
+          "contact" : {
             "type" : "string",
-            "example" : "64a6c3b3e4f3b4f00123abcd"
-          },
-          "quantity" : {
-            "type" : "integer",
-            "example" : 50
-          },
-          "price" : {
-            "type" : "number",
-            "format" : "float",
-            "example" : 1200.5
-          },
-          "description" : {
-            "type" : "string",
-            "example" : "High performance laptop"
+            "description" : "Contact number or email.",
+            "example" : "supplier@example.com"
           }
         }
       },
       "Supplier" : {
-        "required" : [ "email", "name" ],
+        "allOf" : [ {
+          "required" : [ "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "$ref" : "#/components/schemas/SupplierInput"
+        } ]
+      },
+      "ItemInput" : {
+        "required" : [ "name", "price" ],
         "type" : "object",
         "properties" : {
-          "_id" : {
-            "type" : "string",
-            "example" : "64a6c3b3e4f3b4f00123ijkl"
-          },
           "name" : {
             "type" : "string",
-            "example" : "Tech Supplies Inc"
+            "description" : "Name of the Item.",
+            "example" : "Smartphone X"
           },
-          "email" : {
-            "type" : "string",
-            "example" : "supplier@tech.com"
+          "price" : {
+            "type" : "number",
+            "description" : "Price of the item.",
+            "format" : "float",
+            "example" : 599.99
           },
-          "phone" : {
+          "category" : {
             "type" : "string",
-            "example" : "+1234567890"
+            "description" : "Category ID (Foreign Key).",
+            "example" : "60c72b2f90b1c3001c876b4a"
+          },
+          "supplier" : {
+            "type" : "string",
+            "description" : "Supplier ID (Foreign Key).",
+            "example" : "60c72b2f90b1c3001c876b4b"
+          }
+        }
+      },
+      "Item" : {
+        "allOf" : [ {
+          "required" : [ "_id" ],
+          "type" : "object",
+          "properties" : {
+            "_id" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "$ref" : "#/components/schemas/ItemInput"
+        } ]
+      },
+      "inline_response_200" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "Category deleted"
+          }
+        }
+      },
+      "inline_response_200_1" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "Item deleted"
+          }
+        }
+      },
+      "inline_response_200_2" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "example" : "Supplier deleted"
           }
         }
       }

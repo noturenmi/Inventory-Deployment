@@ -28,19 +28,12 @@
   "tags": [
     {
       "name": "Items",
-      "description": "Operations related to inventory items. Create, read, update, delete, and search items in the inventory.",
-      "externalDocs": {
-        "description": "Learn more about items",
-        "url": "https://docs.inventory-api.com/items"
-      }
+      "description": "Operations related to inventory items. Create, read, update, delete, and search items in the inventory."
+
     },
     {
       "name": "Suppliers",
-      "description": "Manage suppliers who provide items. Each item must be associated with a supplier.",
-      "externalDocs": {
-        "description": "Supplier management guide",
-        "url": "https://docs.inventory-api.com/suppliers"
-      }
+      "description": "Manage suppliers who provide items. Each item must be associated with a supplier."
     },
     {
       "name": "Categories",

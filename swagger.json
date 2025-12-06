@@ -1,22 +1,24 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Inventory Management API",
+    "title": "Inventory Management System API",
     "version": "1.0.0",
-    "description": "Ì≥¶ Complete REST API for managing inventory items and suppliers",
+    "description": "## Ì≥¶ Complete REST API for Inventory Management\n\nA comprehensive API for managing inventory items, suppliers, categories, and generating inventory reports. Built with Node.js, Express, MongoDB, and deployed on Vercel.\n\n### ÌæØ Features\n- **CRUD Operations** for Items and Suppliers\n- **Search & Filter** capabilities\n- **Inventory Analytics** and reporting\n- **Input Validation** and error handling\n- **Rate Limiting** and security\n- **Swagger Documentation** with interactive testing\n\n### Ìª†Ô∏è Technologies\n- **Backend**: Node.js, Express.js\n- **Database**: MongoDB Atlas\n- **ODM**: Mongoose\n- **Validation**: express-validator\n- **Security**: Helmet.js, CORS\n- **Documentation**: Swagger/OpenAPI 3.0\n- **Deployment**: Vercel\n\n### Ì¥ó Quick Links\n- [GitHub Repository](#)\n- [Live API Demo](https://zentinels-inventory-deployment.vercel.app)\n- [Postman Collection](#)\n\n### Ì≥û Support\nFor issues or questions, please contact the development team.",
+    "termsOfService": "https://zentinels-inventory-deployment.vercel.app/terms",
     "contact": {
-      "name": "API Support",
-      "email": "support@inventory.com"
+      "name": "API Support Team",
+      "email": "support@inventory-api.com",
+      "url": "https://zentinels-inventory-deployment.vercel.app/support"
     },
     "license": {
-      "name": "MIT",
+      "name": "MIT License",
       "url": "https://opensource.org/licenses/MIT"
     }
   },
   "servers": [
     {
       "url": "https://zentinels-inventory-deployment.vercel.app",
-      "description": "Production Server"
+      "description": "Production Server (Vercel)"
     },
     {
       "url": "http://localhost:3000",
@@ -26,64 +28,115 @@
   "tags": [
     {
       "name": "Items",
-      "description": "Operations related to inventory items"
+      "description": "Operations related to inventory items. Create, read, update, delete, and search items in the inventory.",
+      "externalDocs": {
+        "description": "Learn more about items",
+        "url": "https://docs.inventory-api.com/items"
+      }
     },
     {
       "name": "Suppliers",
-      "description": "Operations related to suppliers"
-    },
-    {
-      "name": "Reports",
-      "description": "Inventory reports and analytics"
+      "description": "Manage suppliers who provide items. Each item must be associated with a supplier.",
+      "externalDocs": {
+        "description": "Supplier management guide",
+        "url": "https://docs.inventory-api.com/suppliers"
+      }
     },
     {
       "name": "Categories",
-      "description": "Item category management"
+      "description": "Item category management. Get all available categories or filter items by category."
+    },
+    {
+      "name": "Reports",
+      "description": "Inventory analytics and reporting. Get insights about stock levels, values, and low-stock items."
+    },
+    {
+      "name": "Search",
+      "description": "Advanced search and filter operations for inventory items."
+    },
+    {
+      "name": "Health",
+      "description": "API health checks and status monitoring."
     }
   ],
   "paths": {
     "/": {
       "get": {
         "summary": "API Root",
-        "description": "Get API information and available endpoints",
+        "description": "Get API information, version, and available endpoints. Use this as the starting point to explore the API.",
         "tags": ["Info"],
         "responses": {
           "200": {
-            "description": "API information",
+            "description": "‚úÖ API information retrieved successfully",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiInfo"
+                },
                 "example": {
-                  "message": "Ì≥¶ Inventory API is running!",
+                  "message": "Ì≥¶ Inventory Management API v1.0",
                   "version": "1.0.0",
+                  "documentation": "https://zentinels-inventory-deployment.vercel.app/api-docs",
                   "endpoints": {
                     "items": "/api/v1/items",
                     "suppliers": "/api/v1/suppliers",
                     "categories": "/api/v1/categories",
                     "reports": "/api/v1/reports/inventory",
-                    "health": "/health",
-                    "docs": "/api-docs"
+                    "health": "/health"
+                  },
+                  "status": "operational",
+                  "timestamp": "2024-01-15T10:30:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check the health status of the API and database connection. Useful for monitoring and uptime checks.",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "‚úÖ API is healthy and operational",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "status": "healthy",
+                  "service": "Inventory API",
+                  "version": "1.0.0",
+                  "timestamp": "2024-01-15T10:30:00Z",
+                  "uptime": 86400.5,
+                  "database": {
+                    "status": "connected",
+                    "connection": "inventory_db",
+                    "host": "cluster.mongodb.net"
+                  },
+                  "memory": {
+                    "rss": "125.8 MB",
+                    "heapTotal": "45.2 MB",
+                    "heapUsed": "32.1 MB"
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/health": {
-      "get": {
-        "summary": "Health Check",
-        "description": "Check API health status",
-        "tags": ["Info"],
-        "responses": {
-          "200": {
-            "description": "API is healthy",
+          },
+          "503": {
+            "description": "‚ö†Ô∏è API is degraded (database disconnected)",
             "content": {
               "application/json": {
                 "example": {
-                  "status": "healthy",
+                  "status": "degraded",
+                  "service": "Inventory API",
+                  "database": "disconnected",
                   "timestamp": "2024-01-15T10:30:00Z",
-                  "service": "Inventory API"
+                  "message": "Database connection lost, API running in limited mode"
                 }
               }
             }
@@ -91,126 +144,221 @@
         }
       }
     },
+    
     "/api/v1/items": {
       "get": {
         "summary": "Get all items",
-        "description": "Retrieve a list of all inventory items",
+        "description": "Retrieve a paginated list of all inventory items with supplier details. Supports optional query parameters for filtering.",
         "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination (default: 1)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items per page (default: 10, max: 100)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by (name, category, stock, price, createdAt)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["name", "category", "stock", "price", "createdAt"],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort order (asc or desc)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "List of items retrieved successfully",
+            "description": "‚úÖ Items retrieved successfully",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemsResponse"
+                },
                 "example": {
                   "success": true,
-                  "count": 2,
+                  "count": 25,
+                  "pagination": {
+                    "page": 1,
+                    "limit": 10,
+                    "totalPages": 3,
+                    "totalItems": 25,
+                    "hasNext": true,
+                    "hasPrev": false
+                  },
                   "data": [
                     {
                       "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
-                      "name": "Laptop",
+                      "name": "Dell XPS 15 Laptop",
                       "category": "Electronics",
-                      "stock": 10,
-                      "price": 999.99,
-                      "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
-                      "createdAt": "2024-01-15T10:30:00Z"
-                    },
-                    {
-                      "_id": "64f8a1b2c9d3e7f5a2b1c3d6",
-                      "name": "Desk Chair",
-                      "category": "Office Supplies",
-                      "stock": 5,
-                      "price": 149.99,
-                      "supplier": "64f8a1b2c9d3e7f5a2b1c3d7",
-                      "createdAt": "2024-01-15T11:30:00Z"
+                      "stock": 15,
+                      "price": 1499.99,
+                      "supplier": {
+                        "_id": "64f8a1b2c9d3e7f5a2b1c3d5",
+                        "name": "Tech Supplies Inc.",
+                        "email": "contact@techsupplies.com"
+                      },
+                      "description": "15-inch laptop with 4K OLED display",
+                      "createdAt": "2024-01-10T09:30:00Z",
+                      "updatedAt": "2024-01-12T14:20:00Z"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "‚ùå Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
         }
       },
+      
       "post": {
         "summary": "Create a new item",
-        "description": "Add a new item to the inventory",
+        "description": "Add a new item to the inventory. All fields are required except description. The supplier must exist in the database.",
         "tags": ["Items"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["name", "category", "stock", "price", "supplier"],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "Wireless Mouse"
-                  },
-                  "category": {
-                    "type": "string",
-                    "example": "Electronics",
-                    "enum": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"]
-                  },
-                  "stock": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "example": 50
-                  },
-                  "price": {
-                    "type": "number",
-                    "minimum": 0,
-                    "example": 25.99
-                  },
-                  "supplier": {
-                    "type": "string",
-                    "example": "64f8a1b2c9d3e7f5a2b1c3d8"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Wireless optical mouse with USB receiver"
+                "$ref": "#/components/schemas/ItemInput"
+              },
+              "examples": {
+                "laptop": {
+                  "summary": "Create a laptop",
+                  "value": {
+                    "name": "MacBook Pro 16-inch",
+                    "category": "Electronics",
+                    "stock": 20,
+                    "price": 2399.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
+                    "description": "16-inch MacBook Pro with M2 Max chip, 32GB RAM, 1TB SSD"
+                  }
+                },
+                "book": {
+                  "summary": "Create a book",
+                  "value": {
+                    "name": "Clean Code: A Handbook of Agile Software Craftsmanship",
+                    "category": "Books",
+                    "stock": 50,
+                    "price": 39.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d6",
+                    "description": "Software development best practices book by Robert C. Martin"
+                  }
+                },
+                "officeSupply": {
+                  "summary": "Create office supply",
+                  "value": {
+                    "name": "Ergonomic Office Chair",
+                    "category": "Office Supplies",
+                    "stock": 8,
+                    "price": 299.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d7",
+                    "description": "Adjustable ergonomic chair with lumbar support"
                   }
                 }
-              },
-              "example": {
-                "name": "Wireless Mouse",
-                "category": "Electronics",
-                "stock": 50,
-                "price": 25.99,
-                "supplier": "64f8a1b2c9d3e7f5a2b1c3d8",
-                "description": "Wireless optical mouse with USB receiver"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Item created successfully",
+            "description": "‚úÖ Item created successfully",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
                 "example": {
                   "success": true,
+                  "message": "Item created successfully",
                   "data": {
-                    "_id": "64f8a1b2c9d3e7f5a2b1c3d9",
-                    "name": "Wireless Mouse",
+                    "_id": "64f8a1b2c9d3e7f5a2b1c3d8",
+                    "name": "MacBook Pro 16-inch",
                     "category": "Electronics",
-                    "stock": 50,
-                    "price": 25.99,
-                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d8",
-                    "description": "Wireless optical mouse with USB receiver",
-                    "createdAt": "2024-01-15T12:30:00Z",
-                    "updatedAt": "2024-01-15T12:30:00Z"
+                    "stock": 20,
+                    "price": 2399.99,
+                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
+                    "description": "16-inch MacBook Pro with M2 Max chip, 32GB RAM, 1TB SSD",
+                    "createdAt": "2024-01-15T10:30:00Z",
+                    "updatedAt": "2024-01-15T10:30:00Z"
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request - validation error",
+            "description": "‚ùå Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Validation Error",
+                  "errors": [
+                    {
+                      "field": "name",
+                      "message": "Item name is required",
+                      "value": ""
+                    },
+                    {
+                      "field": "price",
+                      "message": "Price must be a positive number",
+                      "value": -10
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "‚ùå Supplier not found",
             "content": {
               "application/json": {
                 "example": {
                   "success": false,
-                  "error": "Item name is required"
+                  "error": "Supplier not found",
+                  "message": "The specified supplier does not exist in the database"
                 }
               }
             }
@@ -218,59 +366,66 @@
         }
       }
     },
+    
     "/api/v1/items/{id}": {
       "get": {
         "summary": "Get item by ID",
-        "description": "Retrieve a specific item by its ID",
+        "description": "Retrieve a specific inventory item by its unique identifier. Returns complete item details including supplier information.",
         "tags": ["Items"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "Item ID",
+            "description": "Unique identifier of the item (MongoDB ObjectId)",
             "schema": {
-              "type": "string"
-            },
-            "example": "64f8a1b2c9d3e7f5a2b1c3d4"
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "example": "64f8a1b2c9d3e7f5a2b1c3d4"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Item found",
+            "description": "‚úÖ Item found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "‚ùå Invalid ID format",
             "content": {
               "application/json": {
                 "example": {
-                  "success": true,
-                  "data": {
-                    "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
-                    "name": "Laptop",
-                    "category": "Electronics",
-                    "stock": 10,
-                    "price": 999.99,
-                    "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
-                    "createdAt": "2024-01-15T10:30:00Z"
-                  }
+                  "success": false,
+                  "error": "Invalid ID format",
+                  "message": "Please provide a valid 24-character hexadecimal ID"
                 }
               }
             }
           },
           "404": {
-            "description": "Item not found",
+            "description": "‚ùå Item not found",
             "content": {
               "application/json": {
                 "example": {
                   "success": false,
-                  "error": "Item not found"
+                  "error": "Item not found",
+                  "message": "No item found with the specified ID"
                 }
               }
             }
           }
         }
       },
+      
       "put": {
         "summary": "Update entire item",
-        "description": "Replace all fields of an existing item",
+        "description": "Replace all fields of an existing item. This is a full update - all fields must be provided.",
         "tags": ["Items"],
         "parameters": [
           {
@@ -286,33 +441,30 @@
           "required": true,
           "content": {
             "application/json": {
-              "example": {
-                "name": "Updated Laptop",
-                "category": "Electronics",
-                "stock": 15,
-                "price": 1099.99,
-                "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
-                "description": "Updated description"
+              "schema": {
+                "$ref": "#/components/schemas/ItemInput"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Item updated successfully",
+            "description": "‚úÖ Item updated successfully",
             "content": {
               "application/json": {
                 "example": {
                   "success": true,
+                  "message": "Item updated successfully",
                   "data": {
                     "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
-                    "name": "Updated Laptop",
+                    "name": "Updated Laptop Name",
                     "category": "Electronics",
-                    "stock": 15,
-                    "price": 1099.99,
+                    "stock": 25,
+                    "price": 1599.99,
                     "supplier": "64f8a1b2c9d3e7f5a2b1c3d5",
                     "description": "Updated description",
-                    "updatedAt": "2024-01-15T13:30:00Z"
+                    "createdAt": "2024-01-10T09:30:00Z",
+                    "updatedAt": "2024-01-15T11:45:00Z"
                   }
                 }
               }
@@ -320,9 +472,10 @@
           }
         }
       },
+      
       "patch": {
         "summary": "Partially update item",
-        "description": "Update specific fields of an item",
+        "description": "Update specific fields of an item without affecting other fields. Only include the fields you want to update.",
         "tags": ["Items"],
         "parameters": [
           {
@@ -337,22 +490,44 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "example": {
-                "stock": 20,
-                "price": 949.99
+              "schema": {
+                "$ref": "#/components/schemas/ItemPartialUpdate"
+              },
+              "examples": {
+                "updateStock": {
+                  "summary": "Update stock only",
+                  "value": {
+                    "stock": 30
+                  }
+                },
+                "updatePrice": {
+                  "summary": "Update price only",
+                  "value": {
+                    "price": 1299.99
+                  }
+                },
+                "updateMultiple": {
+                  "summary": "Update multiple fields",
+                  "value": {
+                    "stock": 25,
+                    "price": 1399.99,
+                    "description": "New updated description"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Item partially updated"
+            "description": "‚úÖ Item partially updated"
           }
         }
       },
+      
       "delete": {
         "summary": "Delete item",
-        "description": "Remove an item from inventory",
+        "description": "Permanently remove an item from the inventory. This action cannot be undone.",
         "tags": ["Items"],
         "parameters": [
           {
@@ -366,35 +541,38 @@
         ],
         "responses": {
           "200": {
-            "description": "Item deleted successfully",
+            "description": "‚úÖ Item deleted successfully",
             "content": {
               "application/json": {
                 "example": {
                   "success": true,
-                  "message": "Item deleted successfully"
+                  "message": "Item deleted successfully",
+                  "deletedId": "64f8a1b2c9d3e7f5a2b1c3d4",
+                  "timestamp": "2024-01-15T12:00:00Z"
                 }
               }
             }
           },
           "404": {
-            "description": "Item not found"
+            "description": "‚ùå Item not found"
           }
         }
       }
     },
+    
     "/api/v1/suppliers": {
       "get": {
         "summary": "Get all suppliers",
-        "description": "Retrieve a list of all suppliers",
+        "description": "Retrieve a list of all suppliers with their contact information.",
         "tags": ["Suppliers"],
         "responses": {
           "200": {
-            "description": "List of suppliers",
+            "description": "‚úÖ Suppliers retrieved successfully",
             "content": {
               "application/json": {
                 "example": {
                   "success": true,
-                  "count": 2,
+                  "count": 3,
                   "data": [
                     {
                       "_id": "64f8a1b2c9d3e7f5a2b1c3d5",
@@ -402,8 +580,9 @@
                       "contact": "John Doe",
                       "phone": "+1-555-123-4567",
                       "email": "contact@techsupplies.com",
-                      "address": "123 Tech Street, San Francisco",
-                      "createdAt": "2024-01-10T09:00:00Z"
+                      "address": "123 Tech Street, San Francisco, CA 94107",
+                      "createdAt": "2024-01-05T09:00:00Z",
+                      "updatedAt": "2024-01-10T14:30:00Z"
                     }
                   ]
                 }
@@ -412,61 +591,58 @@
           }
         }
       },
+      
       "post": {
         "summary": "Create new supplier",
-        "description": "Add a new supplier to the system",
+        "description": "Add a new supplier to the system. Supplier name must be unique.",
         "tags": ["Suppliers"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["name"],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "Office Depot"
-                  },
-                  "contact": {
-                    "type": "string",
-                    "example": "Jane Smith"
-                  },
-                  "phone": {
-                    "type": "string",
-                    "example": "+1-555-987-6543"
-                  },
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "example": "sales@officedepot.com"
-                  },
-                  "address": {
-                    "type": "string",
-                    "example": "456 Office Ave, New York"
+                "$ref": "#/components/schemas/SupplierInput"
+              },
+              "examples": {
+                "techSupplier": {
+                  "summary": "Technology supplier",
+                  "value": {
+                    "name": "Apple Inc.",
+                    "contact": "Tim Cook",
+                    "phone": "+1-408-996-1010",
+                    "email": "contact@apple.com",
+                    "address": "1 Apple Park Way, Cupertino, CA 95014"
+                  }
+                },
+                "bookSupplier": {
+                  "summary": "Book supplier",
+                  "value": {
+                    "name": "Penguin Random House",
+                    "contact": "Jane Smith",
+                    "phone": "+1-212-782-9000",
+                    "email": "orders@penguinrandomhouse.com",
+                    "address": "1745 Broadway, New York, NY 10019"
                   }
                 }
-              },
-              "example": {
-                "name": "Office Depot",
-                "contact": "Jane Smith",
-                "phone": "+1-555-987-6543",
-                "email": "sales@officedepot.com",
-                "address": "456 Office Ave, New York"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Supplier created successfully"
+            "description": "‚úÖ Supplier created successfully"
+          },
+          "400": {
+            "description": "‚ùå Validation error or duplicate supplier"
           }
         }
       }
     },
+    
     "/api/v1/suppliers/{id}": {
       "get": {
-        "summary": "Get supplier by ID",
+        "summary": "Get supplier by ID with items",
+        "description": "Retrieve supplier details along with all items supplied by this supplier.",
         "tags": ["Suppliers"],
         "parameters": [
           {
@@ -480,27 +656,93 @@
         ],
         "responses": {
           "200": {
-            "description": "Supplier found"
-          },
-          "404": {
-            "description": "Supplier not found"
-          }
-        }
-      }
-    },
-    "/api/v1/categories": {
-      "get": {
-        "summary": "Get all categories",
-        "description": "Retrieve a list of all item categories",
-        "tags": ["Categories"],
-        "responses": {
-          "200": {
-            "description": "List of categories",
+            "description": "‚úÖ Supplier found with items",
             "content": {
               "application/json": {
                 "example": {
                   "success": true,
-                  "data": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"]
+                  "data": {
+                    "_id": "64f8a1b2c9d3e7f5a2b1c3d5",
+                    "name": "Tech Supplies Inc.",
+                    "contact": "John Doe",
+                    "phone": "+1-555-123-4567",
+                    "email": "contact@techsupplies.com",
+                    "address": "123 Tech Street, San Francisco, CA",
+                    "items": [
+                      {
+                        "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                        "name": "Dell XPS 15 Laptop",
+                        "category": "Electronics",
+                        "stock": 15,
+                        "price": 1499.99
+                      }
+                    ],
+                    "itemCount": 5,
+                    "totalStockValue": 25000.50
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      
+      "put": {
+        "summary": "Update supplier",
+        "tags": ["Suppliers"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "‚úÖ Supplier updated"
+          }
+        }
+      },
+      
+      "delete": {
+        "summary": "Delete supplier",
+        "description": "Delete a supplier. This operation will fail if the supplier has associated items.",
+        "tags": ["Suppliers"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "‚úÖ Supplier deleted successfully"
+          },
+          "400": {
+            "description": "‚ùå Cannot delete supplier with items",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "error": "Cannot delete supplier",
+                  "message": "Supplier has 5 associated items. Remove or reassign items before deleting."
                 }
               }
             }
@@ -508,46 +750,219 @@
         }
       }
     },
-    "/api/v1/reports/inventory": {
+    
+    "/api/v1/categories": {
       "get": {
-        "summary": "Get inventory report",
-        "description": "Get comprehensive inventory statistics and analytics",
-        "tags": ["Reports"],
+        "summary": "Get all categories",
+        "description": "Retrieve a list of all unique item categories in the inventory.",
+        "tags": ["Categories"],
         "responses": {
           "200": {
-            "description": "Inventory report",
+            "description": "‚úÖ Categories retrieved",
             "content": {
               "application/json": {
                 "example": {
                   "success": true,
+                  "data": [
+                    "Electronics",
+                    "Clothing",
+                    "Food",
+                    "Books",
+                    "General",
+                    "Office Supplies"
+                  ],
+                  "count": 6,
+                  "timestamp": "2024-01-15T10:30:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/api/v1/reports/inventory": {
+      "get": {
+        "summary": "Get inventory report",
+        "description": "Generate comprehensive inventory analytics including total stock value, category breakdown, and low-stock alerts.",
+        "tags": ["Reports"],
+        "responses": {
+          "200": {
+            "description": "‚úÖ Report generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryReport"
+                },
+                "example": {
+                  "success": true,
                   "data": {
                     "summary": {
-                      "totalItems": 10,
-                      "totalStock": 150,
-                      "totalValue": 25000.50
+                      "totalItems": 125,
+                      "totalStock": 850,
+                      "totalValue": 125000.75,
+                      "averagePrice": 147.06,
+                      "averageStock": 6.8
                     },
                     "byCategory": [
                       {
                         "category": "Electronics",
-                        "itemCount": 5,
-                        "totalStock": 50,
-                        "totalValue": 20000
+                        "itemCount": 35,
+                        "totalStock": 120,
+                        "totalValue": 85000.50,
+                        "percentage": 68.0
                       },
                       {
                         "category": "Office Supplies",
-                        "itemCount": 3,
-                        "totalStock": 75,
-                        "totalValue": 1500.50
+                        "itemCount": 45,
+                        "totalStock": 450,
+                        "totalValue": 15000.25,
+                        "percentage": 12.0
                       }
                     ],
                     "lowStock": [
                       {
                         "id": "64f8a1b2c9d3e7f5a2b1c3d4",
-                        "name": "Laptop",
-                        "stock": 2
+                        "name": "Dell XPS 15 Laptop",
+                        "category": "Electronics",
+                        "stock": 2,
+                        "price": 1499.99,
+                        "value": 2999.98,
+                        "supplier": "Tech Supplies Inc.",
+                        "reorderNeeded": true
                       }
-                    ]
+                    ],
+                    "topItems": [
+                      {
+                        "id": "64f8a1b2c9d3e7f5a2b1c3d8",
+                        "name": "MacBook Pro 16-inch",
+                        "value": 47999.80,
+                        "stock": 20,
+                        "price": 2399.99
+                      }
+                    ],
+                    "thresholds": {
+                      "lowStock": 5,
+                      "criticalStock": 2,
+                      "reorderLevel": 10
+                    },
+                    "generatedAt": "2024-01-15T10:30:00Z"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/api/v1/search": {
+      "get": {
+        "summary": "Search and filter items",
+        "description": "Advanced search functionality to find items by name, category, or stock range. Supports multiple search criteria.",
+        "tags": ["Search"],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search term for item name or category (case-insensitive)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "laptop"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by specific category",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"]
+            }
+          },
+          {
+            "name": "minStock",
+            "in": "query",
+            "description": "Minimum stock quantity",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 5
+            }
+          },
+          {
+            "name": "maxStock",
+            "in": "query",
+            "description": "Maximum stock quantity",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 100
+            }
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "description": "Minimum price",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "example": 100
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "description": "Maximum price",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "example": 1000
+            }
+          },
+          {
+            "name": "supplier",
+            "in": "query",
+            "description": "Filter by supplier ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "‚úÖ Search results",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "count": 8,
+                  "query": {
+                    "q": "laptop",
+                    "category": "Electronics",
+                    "minPrice": 500,
+                    "maxPrice": 2000
+                  },
+                  "data": [
+                    {
+                      "_id": "64f8a1b2c9d3e7f5a2b1c3d4",
+                      "name": "Dell XPS 15 Laptop",
+                      "category": "Electronics",
+                      "stock": 15,
+                      "price": 1499.99,
+                      "supplier": {
+                        "_id": "64f8a1b2c9d3e7f5a2b1c3d5",
+                        "name": "Tech Supplies Inc."
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -556,18 +971,196 @@
       }
     }
   },
+  
   "components": {
     "schemas": {
+      "ApiInfo": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Welcome message"
+          },
+          "version": {
+            "type": "string",
+            "description": "API version"
+          },
+          "documentation": {
+            "type": "string",
+            "description": "URL to API documentation"
+          },
+          "endpoints": {
+            "type": "object",
+            "description": "Available API endpoints"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["operational", "maintenance", "degraded"]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"]
+          },
+          "service": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptime": {
+            "type": "number",
+            "description": "Service uptime in seconds"
+          },
+          "database": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["connected", "disconnected"]
+              },
+              "connection": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              }
+            }
+          },
+          "memory": {
+            "type": "object",
+            "properties": {
+              "rss": {
+                "type": "string",
+                "description": "Resident Set Size"
+              },
+              "heapTotal": {
+                "type": "string"
+              },
+              "heapUsed": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      
       "Item": {
         "type": "object",
+        "required": ["name", "category", "stock", "price", "supplier"],
         "properties": {
           "_id": {
             "type": "string",
-            "description": "Unique identifier"
+            "description": "Unique identifier (MongoDB ObjectId)"
           },
           "name": {
             "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
             "description": "Item name"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"],
+            "description": "Item category"
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Quantity in stock"
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Unit price in USD"
+          },
+          "supplier": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Supplier ID"
+              },
+              {
+                "$ref": "#/components/schemas/Supplier"
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Item description"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      
+      "ItemInput": {
+        "type": "object",
+        "required": ["name", "category", "stock", "price", "supplier"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Wireless Mouse"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"],
+            "example": "Electronics"
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 50
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "example": 25.99
+          },
+          "supplier": {
+            "type": "string",
+            "description": "Supplier ID (MongoDB ObjectId)",
+            "example": "64f8a1b2c9d3e7f5a2b1c3d5"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "Wireless optical mouse with USB receiver"
+          }
+        }
+      },
+      
+      "ItemPartialUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
           "category": {
             "type": "string",
@@ -582,33 +1175,30 @@
             "minimum": 0
           },
           "supplier": {
-            "type": "string",
-            "description": "Supplier ID"
-          },
-          "description": {
             "type": "string"
           },
-          "createdAt": {
+          "description": {
             "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+            "maxLength": 500
           }
         }
       },
+      
       "Supplier": {
         "type": "object",
+        "required": ["name"],
         "properties": {
           "_id": {
             "type": "string"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
           "contact": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100
           },
           "phone": {
             "type": "string"
@@ -618,7 +1208,8 @@
             "format": "email"
           },
           "address": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 200
           },
           "createdAt": {
             "type": "string",
@@ -630,6 +1221,219 @@
           }
         }
       },
+      
+      "SupplierInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Tech Supplies Inc."
+          },
+          "contact": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "John Doe"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1-555-123-4567"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "contact@techsupplies.com"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 200,
+            "example": "123 Tech Street, San Francisco, CA"
+          }
+        }
+      },
+      
+      "ItemsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Total number of items in current page"
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              },
+              "totalItems": {
+                "type": "integer"
+              },
+              "hasNext": {
+                "type": "boolean"
+              },
+              "hasPrev": {
+                "type": "boolean"
+              }
+            }
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      
+      "InventoryReport": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "totalItems": {
+                "type": "integer"
+              },
+              "totalStock": {
+                "type": "integer"
+              },
+              "totalValue": {
+                "type": "number"
+              },
+              "averagePrice": {
+                "type": "number"
+              },
+              "averageStock": {
+                "type": "number"
+              }
+            }
+          },
+          "byCategory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                },
+                "itemCount": {
+                  "type": "integer"
+                },
+                "totalStock": {
+                  "type": "integer"
+                },
+                "totalValue": {
+                  "type": "number"
+                },
+                "percentage": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "lowStock": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "stock": {
+                  "type": "integer"
+                },
+                "price": {
+                  "type": "number"
+                },
+                "value": {
+                  "type": "number"
+                },
+                "supplier": {
+                  "type": "string"
+                },
+                "reorderNeeded": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "topItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                },
+                "stock": {
+                  "type": "integer"
+                },
+                "price": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "thresholds": {
+            "type": "object",
+            "properties": {
+              "lowStock": {
+                "type": "integer"
+              },
+              "criticalStock": {
+                "type": "integer"
+              },
+              "reorderLevel": {
+                "type": "integer"
+              }
+            }
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      
       "Error": {
         "type": "object",
         "properties": {
@@ -639,10 +1443,139 @@
           },
           "error": {
             "type": "string",
-            "example": "Error message"
+            "description": "Error type"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      
+      "ValidationError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Error"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication required",
+        "content": {
+          "application/json": {
+            "example": {
+              "success": false,
+              "error": "Unauthorized",
+              "message": "Authentication is required to access this resource"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Insufficient permissions",
+        "content": {
+          "application/json": {
+            "example": {
+              "success": false,
+              "error": "Forbidden",
+              "message": "You do not have permission to perform this action"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "example": {
+              "success": false,
+              "error": "Not Found",
+              "message": "The requested resource was not found"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "example": {
+              "success": false,
+              "error": "Too Many Requests",
+              "message": "Rate limit exceeded. Please try again later.",
+              "retryAfter": 900
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "example": {
+              "success": false,
+              "error": "Internal Server Error",
+              "message": "An unexpected error occurred. Our team has been notified.",
+              "referenceId": "ERR-20240115-123456"
+            }
           }
         }
       }
+    },
+    
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for authenticating requests"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token for authentication"
+      }
     }
+  },
+  
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  
+  "externalDocs": {
+    "description": "Project GitHub Repository",
+    "url": "https://github.com/yourusername/inventory-api"
   }
 }

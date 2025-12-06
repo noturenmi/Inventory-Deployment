@@ -9,7 +9,6 @@ const fs = require("fs");
 const app = express();
 
 // ==================== MIDDLEWARE ====================
-// Allow ALL origins for Swagger UI to work
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -18,8 +17,6 @@ app.use(cors({
 
 app.use(helmet());
 app.use(express.json());
-
-// Handle preflight requests
 app.options('*', cors());
 
 // ==================== DATABASE CONNECTION ====================
@@ -33,29 +30,6 @@ if (MONGODB_URI) {
   .then(() => console.log("âœ… MongoDB Connected"))
   .catch(err => console.error("âŒ MongoDB Error:", err.message));
 }
-
-// ==================== SIMPLE SCHEMAS ====================
-const itemSchema = new mongoose.Schema({
-  name: String,
-  category: String,
-  stock: Number,
-  price: Number,
-  supplier: String,
-  description: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-const supplierSchema = new mongoose.Schema({
-  name: String,
-  contact: String,
-  phone: String,
-  email: String,
-  address: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Item = mongoose.model("Item", itemSchema);
-const Supplier = mongoose.model("Supplier", supplierSchema);
 
 // ==================== SWAGGER DOCUMENTATION ====================
 // Serve the HTML file directly
@@ -86,18 +60,17 @@ app.get("/api-docs", (req, res) => {
   }
 });
 
-// Also serve at root
 app.get("/docs", (req, res) => {
   res.redirect("/api-docs");
 });
 
-console.log("í³š Swagger docs available at /api-docs");
+console.log("ğŸ“š Swagger docs available at /api-docs");
 
 // ==================== API ROUTES ====================
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
-    message: "í³¦ Inventory API v1.0",
+    message: "ğŸ“¦ Inventory API v1.0",
     documentation: "/api-docs",
     endpoints: {
       items: "/api/v1/items",
@@ -117,120 +90,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ITEMS ENDPOINTS
-app.get("/api/v1/items", async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.json({
-        success: true,
-        count: 0,
-        data: [],
-        message: "Database not connected"
-      });
-    }
-    const items = await Item.find();
-    res.json({ success: true, count: items.length, data: items });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-app.post("/api/v1/items", async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        error: "Database not connected"
-      });
-    }
-    const item = new Item(req.body);
-    await item.save();
-    res.status(201).json({ success: true, data: item });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-});
-
-// SUPPLIERS ENDPOINTS
-app.get("/api/v1/suppliers", async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.json({
-        success: true,
-        count: 0,
-        data: [],
-        message: "Database not connected"
-      });
-    }
-    const suppliers = await Supplier.find();
-    res.json({ success: true, count: suppliers.length, data: suppliers });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-app.post("/api/v1/suppliers", async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        error: "Database not connected"
-      });
-    }
-    const supplier = new Supplier(req.body);
-    await supplier.save();
-    res.status(201).json({ success: true, data: supplier });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-});
-
-// ADDITIONAL ENDPOINTS
-app.get("/api/v1/categories", async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.json({
-        success: true,
-        data: ["Electronics", "Clothing", "Food", "Books", "General", "Office Supplies"],
-        mock: true
-      });
-    }
-    const categories = await Item.distinct("category");
-    res.json({ success: true, data: categories });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-app.get("/api/v1/reports/inventory", async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.json({
-        success: true,
-        data: {
-          summary: { totalItems: 0, totalStock: 0, totalValue: 0 },
-          byCategory: [],
-          lowStock: [],
-          mock: true
-        }
-      });
-    }
-    const items = await Item.find();
-    const totalItems = items.length;
-    const totalStock = items.reduce((sum, item) => sum + (item.stock || 0), 0);
-    const totalValue = items.reduce((sum, item) => sum + ((item.stock || 0) * (item.price || 0)), 0);
-    
-    res.json({
-      success: true,
-      data: {
-        summary: { totalItems, totalStock, totalValue },
-        lowStock: items.filter(item => (item.stock || 0) <= 5)
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+// âœ… IMPORTANT: Use your route files instead of defining routes here
+const apiRoutes = require("./api/v1/routes/index");
+app.use("/api/v1", apiRoutes);
 
 // ==================== ERROR HANDLING ====================
 app.use((req, res) => {
@@ -245,9 +107,9 @@ app.use((req, res) => {
 // ==================== START SERVER ====================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`íº€ Server running on http://localhost:${PORT}`);
-  console.log(`í³š Documentation: http://localhost:${PORT}/api-docs`);
-  console.log(`í¼ Also at: http://localhost:${PORT}/docs`);
+  console.log(`ğŸš€ Server running on http://localhost:${PORT}`);
+  console.log(`ğŸ“š Documentation: http://localhost:${PORT}/api-docs`);
+  console.log(`ğŸ“š Also at: http://localhost:${PORT}/docs`);
 });
 
 module.exports = app;

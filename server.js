@@ -72,10 +72,6 @@ app.get("/api-docs", (req, res) => {
               title: "📦 Inventory Management API",
               version: "1.0.0",
               description: "Complete API for managing inventory items, suppliers, and categories",
-              contact: {
-                name: "API Support",
-                url: "http://localhost:${process.env.PORT || 3000}"
-              }
             },
             servers: [
               {

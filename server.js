@@ -19,6 +19,58 @@ app.use(helmet());
 app.use(express.json());
 app.options('*', cors());
 
+// ==================== SIMPLE SWAGGER ====================
+// Simple Swagger UI (no file needed)
+app.get("/api-docs", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Inventory API Docs</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui.css">
+    </head>
+    <body>
+      <div id="swagger-ui"></div>
+      <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+      <script>
+        SwaggerUIBundle({
+          url: "/swagger.json", // or your swagger.json path
+          dom_id: '#swagger-ui',
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+          ],
+          layout: "BaseLayout"
+        });
+      </script>
+    </body>
+    </html>
+  `);
+});
+
+// If you have a swagger.json file
+app.get("/swagger.json", (req, res) => {
+  res.json({
+    openapi: "3.0.0",
+    info: {
+      title: "Inventory API",
+      version: "1.0.0",
+      description: "API for inventory management"
+    },
+    servers: [{ url: "http://localhost:3000" }],
+    paths: {
+      "/api/v1/items": {
+        get: { summary: "Get all items" },
+        post: { summary: "Create item" }
+      },
+      "/api/v1/suppliers": {
+        get: { summary: "Get all suppliers" },
+        post: { summary: "Create supplier" }
+      }
+    }
+  });
+});
+
 // ==================== DATABASE CONNECTION ====================
 const MONGODB_URI = process.env.MONGODB_URI;
 

@@ -10,25 +10,33 @@ const app = express();
 
 // ==================== MIDDLEWARE ====================
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Configure Helmet for Swagger UI compatibility
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-      fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
-      imgSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"]
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins in development
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
     }
-  }
+    
+    // In production, specify allowed origins
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://zentinels-inventory-deployment.vercel.app' // Your production domain
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-app.use(express.json());
+// Handle preflight requests
 app.options('*', cors());
 
 // ==================== DATABASE CONNECTION ====================
@@ -45,6 +53,8 @@ if (MONGODB_URI) {
 
 // ==================== COMPLETE SWAGGER DOCUMENTATION ====================
 app.get("/api-docs", (req, res) => {
+  const currentUrl = `http://${req.headers.host}`;
+  
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -72,11 +82,19 @@ app.get("/api-docs", (req, res) => {
               title: "📦 Inventory Management API",
               version: "1.0.0",
               description: "Complete API for managing inventory items, suppliers, and categories",
+              contact: {
+                name: "API Support",
+                url: "${currentUrl}"
+              }
             },
             servers: [
               {
-                url: "http://localhost:${process.env.PORT || 3000}",
-                description: "Development server"
+                url: "https://zentinels-inventory-deployment.vercel.app",
+                description: "Current Server"
+              },
+              {
+                url: "http://localhost:3000",
+                description: "Development Server"
               }
             ],
             tags: [
@@ -719,8 +737,21 @@ app.get("/api-docs", (req, res) => {
             ],
             layout: "BaseLayout",
             showExtensions: true,
-            showCommonExtensions: true
+            showCommonExtensions: true,
+            requestInterceptor: function(request) {
+              // Ensure requests are made with proper headers
+              request.headers['Content-Type'] = 'application/json';
+              return request;
+            },
+            responseInterceptor: function(response) {
+              // Log responses for debugging
+              console.log('Response:', response);
+              return response;
+            }
           });
+          
+          // Set the default server URL
+          ui.specActions.updateUrl("${currentUrl}");
         };
       </script>
     </body>

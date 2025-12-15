@@ -2,8 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger/swagger.json");
 const path = require("path");
 
 // Load environment variables
@@ -16,15 +14,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection - UPDATED FOR VERCEL
+// MongoDB connection - VERCEL OPTIMIZED
 const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
-if (!mongoUri) {
-  console.error("❌ MongoDB URI is not defined in environment variables");
-  console.error("Please set MONGO_URI or MONGODB_URI environment variable");
+
+// Initialize mongoose connection (will connect on first request)
+if (mongoUri) {
+  mongoose.connect(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }).then(() => {
+    console.log("✅ MongoDB Connected");
+  }).catch(err => {
+    console.error("❌ MongoDB connection error:", err.message);
+  });
 } else {
-  mongoose.connect(mongoUri)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.log("❌ MongoDB connection error:", err));
+  console.warn("⚠️  MongoDB URI not found. API will work but without database.");
 }
 
 // Import models
@@ -32,115 +36,73 @@ require("./models/Item");
 require("./models/Category");
 require("./models/Supplier");
 
-// ============================
-// ROUTES
-// ============================
+// Import routes
+const itemsRouter = require("./routes/items");
+const categoriesRouter = require("./routes/categories");
+const suppliersRouter = require("./routes/suppliers");
 
-// Items
-app.use("/api/v1/items", require("./routes/items"));
+// Routes
+app.use("/api/v1/items", itemsRouter);
+app.use("/api/v1/categories", categoriesRouter);
+app.use("/api/v1/suppliers", suppliersRouter);
 
-// Categories
-app.use("/api/v1/categories", require("./routes/categories"));
-
-// Suppliers
-app.use("/api/v1/suppliers", require("./routes/suppliers"));
-
-// Swagger Documentation
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-// Serve Swagger JSON
-app.get("/swagger.json", (req, res) => {
-  res.sendFile(path.join(__dirname, "swagger", "swagger.json"));
+// Health check endpoint (IMPORTANT for Vercel)
+app.get("/api/health", (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    database: dbStatus,
+    environment: process.env.NODE_ENV || "development"
+  });
 });
 
-// ============================
-// DASHBOARD HOMEPAGE
-// ============================
-app.get("/", (req, res) => {
-    res.send(`
-        <html>
-        <head>
-            <title>Inventory API Dashboard</title>
-            <style>
-                body { font-family: Arial, sans-serif; background: #f4f6f9; margin:0; padding:0; }
-                header { background: #2d89ef; color: white; padding: 20px; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
-                h1 { margin:0; font-size:28px; }
-                .container { max-width: 900px; margin:40px auto; padding:20px; }
-                .card { background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 3px 8px rgba(0,0,0,0.1);}
-                .card h2 { color: #2d89ef; margin-top:0;}
-                ul { list-style:none; padding:0;}
-                li { padding:8px 0;}
-                a { color:#2d89ef; font-weight:600; text-decoration:none;}
-                a:hover { text-decoration:underline;}
-                footer { text-align:center; padding:20px; margin-top:40px; color:#777;}
-            </style>
-        </head>
-        <body>
-            <header>
-                <h1>📦 Inventory System API Dashboard</h1>
-                <p>View and test available API endpoints</p>
-            </header>
-
-            <div class="container">
-                <div class="card">
-                    <h2>📁 Items</h2>
-                    <ul>
-                        <li><a href="/api/v1/items">GET /api/v1/items</a></li>
-                        <li>POST /api/v1/items</li>
-                        <li>GET /api/v1/items/:id</li>
-                        <li>PUT /api/v1/items/:id</li>
-                        <li>DELETE /api/v1/items/:id</li>
-                    </ul>
-                </div>
-
-                <div class="card">
-                    <h2>📚 Categories</h2>
-                    <ul>
-                        <li><a href="/api/v1/categories">GET /api/v1/categories</a></li>
-                        <li>POST /api/v1/categories</li>
-                        <li>GET /api/v1/categories/:id</li>
-                        <li>PUT /api/v1/categories/:id</li>
-                        <li>DELETE /api/v1/categories/:id</li>
-                    </ul>
-                </div>
-
-                <div class="card">
-                    <h2>🏭 Suppliers</h2>
-                    <ul>
-                        <li><a href="/api/v1/suppliers">GET /api/v1/suppliers</a></li>
-                        <li>POST /api/v1/suppliers</li>
-                        <li>GET /api/v1/suppliers/:id</li>
-                        <li>PUT /api/v1/suppliers/:id</li>
-                        <li>DELETE /api/v1/suppliers/:id</li>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h2>📘 API Documentation</h2>
-                    <ul>
-                        <li><a href="/api-docs">Open Swagger UI</a></li>
-                        <li><a href="/swagger.json">View Swagger JSON</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <footer>
-                Inventory API © ${new Date().getFullYear()}
-            </footer>
-        </body>
-        </html>
-    `);
-});
-
-// ============================
-// START SERVER
-// ============================
-// UPDATED FOR VERCEL: Use port from environment or default
-const PORT = process.env.PORT || 3000;
-
-// Only start server if not in Vercel serverless environment
-if (process.env.VERCEL !== "1") {
-  app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+// Try to load Swagger (optional, won't crash if missing)
+try {
+  const swaggerUi = require("swagger-ui-express");
+  const swaggerDocument = require("./swagger/swagger.json");
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  app.get("/swagger.json", (req, res) => {
+    res.sendFile(path.join(__dirname, "swagger", "swagger.json"));
+  });
+  console.log("✅ Swagger UI enabled");
+} catch (error) {
+  console.log("⚠️  Swagger UI disabled:", error.message);
 }
 
-// Export for Vercel serverless
+// Simple homepage
+app.get("/", (req, res) => {
+  res.json({
+    message: "Inventory API is running!",
+    endpoints: {
+      items: "/api/v1/items",
+      categories: "/api/v1/categories",
+      suppliers: "/api/v1/suppliers",
+      documentation: "/api-docs",
+      health: "/api/health"
+    },
+    deployment: "Vercel",
+    status: "active"
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`
+  });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : {}
+  });
+});
+
+// For Vercel: Export the app as serverless function
 module.exports = app;

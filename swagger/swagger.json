@@ -1,79 +1,642 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Inventory Management API",
-    "description": "API for managing inventory items and suppliers",
-    "version": "1.0.0"
+    "title": "Inventory System API",
+    "version": "1.0.0",
+    "description": "API documentation for Inventory System",
+    "contact": {
+      "email": "support@inventory.com"
+    }
   },
   "servers": [
     {
       "url": "http://localhost:3000",
       "description": "Development server"
+    },
+    {
+      "url": "zentinels-inventory-deployment.vercel.app",
+      "description": "Production server"
     }
+  ],
+  "tags": [
+    { "name": "Items", "description": "Operations about inventory items" },
+    { "name": "Categories", "description": "Operations about categories" },
+    { "name": "Suppliers", "description": "Operations about suppliers" }
   ],
   "paths": {
     "/api/v1/items": {
       "get": {
+        "tags": ["Items"],
         "summary": "Get all items",
+        "description": "Returns a list of all inventory items",
         "responses": {
           "200": {
-            "description": "List of items"
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Item"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       },
       "post": {
+        "tags": ["Items"],
         "summary": "Create a new item",
+        "description": "Add a new item to the inventory",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Item"
+              },
+              "examples": {
+                "example 1": {
+                  "value": {
+                    "name": "Mechanical Keyboard",
+                    "category": "String",
+                    "supplier": "String",
+                    "stock": 50,
+                    "price": 89.99,
+                    "description": "String"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Item created successfully"
+            "description": "Item created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       }
     },
     "/api/v1/items/{id}": {
       "get": {
+        "tags": ["Items"],
         "summary": "Get item by ID",
+        "description": "Returns a single item by its ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            },
+            "description": "Item ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Items"],
+        "summary": "Update an item",
+        "description": "Update all fields of an existing item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Item"
+              },
+              "example": {
+                "name": "Updated Item Name",
+                "category": "String",
+                "supplier": "String",
+                "stock": 75,
+                "price": 99.99,
+                "description": "Updated mechanical keyboard with RGB lighting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Items"],
+        "summary": "Delete item",
+        "description": "Delete an item from inventory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Item details"
+            "description": "Item deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Item deleted successfully"
+                    },
+                    "deletedItem": {
+                      "$ref": "#/components/schemas/Item"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get all categories",
+        "description": "Returns a list of all categories",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Create category",
+        "description": "Create a new category",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Category"
+              },
+              "examples": {
+                "example 1": {
+                  "value": {
+                    "name": "String",
+                    "description": "String"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{id}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get category by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Categories"],
+        "summary": "Update category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Category"
+              },
+              "example": {
+                "name": "Updated Electronics Category",
+                "description": "Updated description for electronics"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Categories"],
+        "summary": "Delete category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Category deleted successfully"
+                    },
+                    "deletedCategory": {
+                      "$ref": "#/components/schemas/Category"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       }
     },
     "/api/v1/suppliers": {
       "get": {
+        "tags": ["Suppliers"],
         "summary": "Get all suppliers",
         "responses": {
           "200": {
-            "description": "List of suppliers"
+            "description": "List of suppliers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Supplier"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       },
       "post": {
-        "summary": "Create a new supplier",
+        "tags": ["Suppliers"],
+        "summary": "Create supplier",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Supplier"
+              },
+              "examples": {
+                "supplierA": {
+                  "value": {
+                    "name": "Tech Supplies Inc.",
+                    "contactPerson": "John Doe",
+                    "email": "john@techsupplies.com",
+                    "phone": "+1-234-567-8900",
+                    "address": {
+                      "street": "123 Tech Street",
+                      "city": "San Francisco",
+                      "state": "CA",
+                      "zipCode": "94107",
+                      "country": "USA"
+                    },
+                    "website": "https://techsupplies.com"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
-            "description": "Supplier created successfully"
+            "description": "Supplier created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Supplier"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/suppliers/{id}": {
+      "get": {
+        "tags": ["Suppliers"],
+        "summary": "Get supplier by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supplier details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Supplier"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Suppliers"],
+        "summary": "Update supplier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Supplier"
+              },
+              "example": {
+                "name": "Updated Supplier Corp",
+                "contactPerson": "Jane Smith",
+                "email": "jane@updatedsupplier.com",
+                "phone": "+1-987-654-3210",
+                "address": {
+                  "street": "456 Updated Ave",
+                  "city": "New York",
+                  "state": "NY",
+                  "zipCode": "10001",
+                  "country": "USA"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Supplier updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Supplier"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Suppliers"],
+        "summary": "Delete supplier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectid",
+              "example": "65f8a1b2c3d4e5f6a7b8c9d0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supplier deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Supplier deleted successfully"
+                    },
+                    "deletedSupplier": {
+                      "$ref": "#/components/schemas/Supplier"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       }
@@ -84,24 +647,186 @@
       "Item": {
         "type": "object",
         "properties": {
+          "_id": {
+            "type": "string"
+          },
           "name": {
-            "type": "string",
-            "description": "Item name"
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
           },
           "category": {
-            "type": "string",
-            "description": "Item category"
+            "type": "string"
+          },
+          "supplier": {
+            "type": "string"
           },
           "stock": {
             "type": "integer",
-            "description": "Number of items in stock"
+            "minimum": 1
           },
           "price": {
             "type": "number",
-            "description": "Item price"
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Supplier": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contactPerson": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "zipCode": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Error description"
+          },
+          "error": {
+            "type": "string",
+            "example": "Detailed error information"
+          },
+          "statusCode": {
+            "type": "integer",
+            "example": 400
           }
         }
       }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - Invalid input",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Validation failed",
+              "error": "Name is required",
+              "statusCode": 400
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Item not found",
+              "error": "No item with id 65f8a1b2c3d4e5f6a7b8c9d0",
+              "statusCode": 404
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Internal server error",
+              "error": "Database connection failed",
+              "statusCode": 500
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
 }

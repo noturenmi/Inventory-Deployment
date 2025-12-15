@@ -57,33 +57,108 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Try to load Swagger (optional, won't crash if missing)
+// Try to load Swagger (with better error handling)
+let swaggerSetup = null;
 try {
   const swaggerUi = require("swagger-ui-express");
-  const swaggerDocument = require("./swagger/swagger.json");
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-  app.get("/swagger.json", (req, res) => {
-    res.sendFile(path.join(__dirname, "swagger", "swagger.json"));
-  });
-  console.log("✅ Swagger UI enabled");
+  const swaggerPath = path.join(__dirname, "swagger", "swagger.json");
+  
+  // Check if file exists
+  if (require("fs").existsSync(swaggerPath)) {
+    const swaggerDocument = require(swaggerPath);
+    swaggerSetup = swaggerUi.setup(swaggerDocument);
+    
+    app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
+      if (!swaggerSetup) return next();
+      return swaggerUi.setup(swaggerDocument)(req, res, next);
+    });
+    
+    app.get("/swagger.json", (req, res) => {
+      res.sendFile(swaggerPath);
+    });
+    
+    console.log("✅ Swagger UI enabled");
+  } else {
+    console.warn("⚠️  swagger.json file not found");
+  }
 } catch (error) {
   console.log("⚠️  Swagger UI disabled:", error.message);
 }
 
 // Simple homepage
 app.get("/", (req, res) => {
-  res.json({
-    message: "Inventory API is running!",
-    endpoints: {
-      items: "/api/v1/items",
-      categories: "/api/v1/categories",
-      suppliers: "/api/v1/suppliers",
-      documentation: "/api-docs",
-      health: "/api/health"
-    },
-    deployment: "Vercel",
-    status: "active"
-  });
+    res.send(`
+        <html>
+        <head>
+            <title>Inventory API Dashboard</title>
+            <style>
+                body { font-family: Arial, sans-serif; background: #f4f6f9; margin:0; padding:0; }
+                header { background: #2d89ef; color: white; padding: 20px; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
+                h1 { margin:0; font-size:28px; }
+                .container { max-width: 900px; margin:40px auto; padding:20px; }
+                .card { background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 3px 8px rgba(0,0,0,0.1);}
+                .card h2 { color: #2d89ef; margin-top:0;}
+                ul { list-style:none; padding:0;}
+                li { padding:8px 0;}
+                a { color:#2d89ef; font-weight:600; text-decoration:none;}
+                a:hover { text-decoration:underline;}
+                footer { text-align:center; padding:20px; margin-top:40px; color:#777;}
+            </style>
+        </head>
+        <body>
+            <header>
+                <h1>📦 Inventory System API Dashboard</h1>
+                <p>View and test available API endpoints</p>
+            </header>
+
+            <div class="container">
+                <div class="card">
+                    <h2>📁 Items</h2>
+                    <ul>
+                        <li><a href="/api/v1/items">GET /api/v1/items</a></li>
+                        <li>POST /api/v1/items</li>
+                        <li>GET /api/v1/items/:id</li>
+                        <li>PUT /api/v1/items/:id</li>
+                        <li>DELETE /api/v1/items/:id</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>📚 Categories</h2>
+                    <ul>
+                        <li><a href="/api/v1/categories">GET /api/v1/categories</a></li>
+                        <li>POST /api/v1/categories</li>
+                        <li>GET /api/v1/categories/:id</li>
+                        <li>PUT /api/v1/categories/:id</li>
+                        <li>DELETE /api/v1/categories/:id</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>🏭 Suppliers</h2>
+                    <ul>
+                        <li><a href="/api/v1/suppliers">GET /api/v1/suppliers</a></li>
+                        <li>POST /api/v1/suppliers</li>
+                        <li>GET /api/v1/suppliers/:id</li>
+                        <li>PUT /api/v1/suppliers/:id</li>
+                        <li>DELETE /api/v1/suppliers/:id</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h2>📘 API Documentation</h2>
+                    <ul>
+                        <li><a href="/api-docs">Open Swagger UI</a></li>
+                        <li><a href="/swagger.json">View Swagger JSON</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <footer>
+                Inventory API © ${new Date().getFullYear()}
+            </footer>
+        </body>
+        </html>
+    `);
 });
 
 // 404 handler

@@ -16,10 +16,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
+// MongoDB connection - UPDATED FOR VERCEL
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+if (!mongoUri) {
+  console.error("❌ MongoDB URI is not defined in environment variables");
+  console.error("Please set MONGO_URI or MONGODB_URI environment variable");
+} else {
+  mongoose.connect(mongoUri)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.log("❌ MongoDB connection error:", err));
+}
 
 // Import models
 require("./models/Item");
@@ -71,13 +77,13 @@ app.get("/", (req, res) => {
         </head>
         <body>
             <header>
-                <h1>Inventory System API Dashboard</h1>
+                <h1>📦 Inventory System API Dashboard</h1>
                 <p>View and test available API endpoints</p>
             </header>
 
             <div class="container">
                 <div class="card">
-                    <h2>Items</h2>
+                    <h2>📁 Items</h2>
                     <ul>
                         <li><a href="/api/v1/items">GET /api/v1/items</a></li>
                         <li>POST /api/v1/items</li>
@@ -88,7 +94,7 @@ app.get("/", (req, res) => {
                 </div>
 
                 <div class="card">
-                    <h2>Categories</h2>
+                    <h2>📚 Categories</h2>
                     <ul>
                         <li><a href="/api/v1/categories">GET /api/v1/categories</a></li>
                         <li>POST /api/v1/categories</li>
@@ -99,7 +105,7 @@ app.get("/", (req, res) => {
                 </div>
 
                 <div class="card">
-                    <h2>Suppliers</h2>
+                    <h2>🏭 Suppliers</h2>
                     <ul>
                         <li><a href="/api/v1/suppliers">GET /api/v1/suppliers</a></li>
                         <li>POST /api/v1/suppliers</li>
@@ -109,7 +115,7 @@ app.get("/", (req, res) => {
                     </ul>
                 </div>
                 <div class="card">
-                    <h2>API Documentation</h2>
+                    <h2>📘 API Documentation</h2>
                     <ul>
                         <li><a href="/api-docs">Open Swagger UI</a></li>
                         <li><a href="/swagger.json">View Swagger JSON</a></li>
@@ -128,7 +134,13 @@ app.get("/", (req, res) => {
 // ============================
 // START SERVER
 // ============================
+// UPDATED FOR VERCEL: Use port from environment or default
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
 
+// Only start server if not in Vercel serverless environment
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+}
+
+// Export for Vercel serverless
 module.exports = app;

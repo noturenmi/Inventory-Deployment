@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const path = require("path");
+const swaggerUi = require("swagger-ui-express");
 
 // Load environment variables
 dotenv.config();
@@ -37,222 +37,255 @@ app.use("/api/v1/items", require("./routes/items"));
 app.use("/api/v1/categories", require("./routes/categories"));
 app.use("/api/v1/suppliers", require("./routes/suppliers"));
 
-// ========== FIXED SWAGGER SECTION ==========
-// Simple HTML API documentation (no swagger.json file needed!)
-app.get("/api-docs", (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>📚 Inventory API Documentation</title>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
-          padding: 20px;
+// ========== SWAGGER FIX ==========
+// Create swagger.json directly in code (no file needed!)
+const swaggerDocument = {
+  openapi: "3.0.0",
+  info: {
+    title: "Inventory Management API",
+    description: "API for managing inventory items, categories, and suppliers",
+    version: "1.0.0",
+    contact: {
+      name: "API Support",
+      email: "support@example.com"
+    }
+  },
+  servers: [
+    {
+      url: "https://zentinels-inventory-deployment.vercel.app",
+      description: "Production server"
+    },
+    {
+      url: "http://localhost:3000",
+      description: "Development server"
+    }
+  ],
+  tags: [
+    { name: "Items", description: "Item management endpoints" },
+    { name: "Categories", description: "Category management endpoints" },
+    { name: "Suppliers", description: "Supplier management endpoints" }
+  ],
+  paths: {
+    // ITEMS
+    "/api/v1/items": {
+      get: {
+        tags: ["Items"],
+        summary: "Get all items",
+        responses: {
+          "200": {
+            description: "List of all items",
+            content: {
+              "application/json": {
+                example: [
+                  {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "name": "Laptop",
+                    "category": "Electronics",
+                    "supplier": "Tech Corp",
+                    "stock": 10,
+                    "price": 999.99
+                  }
+                ]
+              }
+            }
+          }
         }
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          background: white;
-          border-radius: 15px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-          overflow: hidden;
+      },
+      post: {
+        tags: ["Items"],
+        summary: "Create a new item",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", example: "Laptop" },
+                  description: { type: "string", example: "Gaming laptop" },
+                  category: { type: "string", example: "Electronics" },
+                  supplier: { type: "string", example: "Tech Corp" },
+                  stock: { type: "number", example: 10 },
+                  price: { type: "number", example: 999.99 }
+                },
+                required: ["name", "category", "supplier", "stock"]
+              }
+            }
+          }
+        },
+        responses: {
+          "201": {
+            description: "Item created successfully"
+          }
         }
-        header {
-          background: #2d3748;
-          color: white;
-          padding: 30px;
-          text-align: center;
+      }
+    },
+    "/api/v1/items/{id}": {
+      get: {
+        tags: ["Items"],
+        summary: "Get item by ID",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "Item ID"
+          }
+        ],
+        responses: {
+          "200": { description: "Item details" },
+          "404": { description: "Item not found" }
         }
-        h1 {
-          font-size: 2.5rem;
-          margin-bottom: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 15px;
+      },
+      put: {
+        tags: ["Items"],
+        summary: "Update item",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" }
+          }
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  stock: { type: "number" },
+                  price: { type: "number" }
+                }
+              }
+            }
+          }
         }
-        .subtitle {
-          color: #cbd5e0;
-          font-size: 1.1rem;
+      },
+      delete: {
+        tags: ["Items"],
+        summary: "Delete item",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" }
+          }
+        ]
+      }
+    },
+    
+    // CATEGORIES
+    "/api/v1/categories": {
+      get: {
+        tags: ["Categories"],
+        summary: "Get all categories",
+        responses: {
+          "200": { description: "List of categories" }
         }
-        .content {
-          padding: 40px;
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-          gap: 25px;
+      },
+      post: {
+        tags: ["Categories"],
+        summary: "Create new category",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", example: "Electronics" },
+                  description: { type: "string", example: "Electronic devices" }
+                },
+                required: ["name"]
+              }
+            }
+          }
         }
-        .endpoint-card {
-          background: #f7fafc;
-          border-radius: 10px;
-          padding: 25px;
-          border-left: 5px solid #4299e1;
-          transition: transform 0.3s, box-shadow 0.3s;
+      }
+    },
+    
+    // SUPPLIERS
+    "/api/v1/suppliers": {
+      get: {
+        tags: ["Suppliers"],
+        summary: "Get all suppliers",
+        responses: {
+          "200": { description: "List of suppliers" }
         }
-        .endpoint-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      },
+      post: {
+        tags: ["Suppliers"],
+        summary: "Create new supplier",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string", example: "Tech Corp" },
+                  contactPerson: { type: "string", example: "John Doe" },
+                  email: { type: "string", example: "contact@techcorp.com" },
+                  phone: { type: "string", example: "+1234567890" }
+                },
+                required: ["name", "phone"]
+              }
+            }
+          }
         }
-        .method {
-          display: inline-block;
-          padding: 5px 15px;
-          border-radius: 5px;
-          font-weight: bold;
-          font-size: 0.9rem;
-          margin-right: 10px;
+      }
+    },
+    
+    // HEALTH CHECK
+    "/api/health": {
+      get: {
+        tags: ["System"],
+        summary: "Health check",
+        responses: {
+          "200": {
+            description: "API health status",
+            content: {
+              "application/json": {
+                example: {
+                  status: "OK",
+                  timestamp: "2023-10-01T12:00:00.000Z",
+                  database: "connected"
+                }
+              }
+            }
+          }
         }
-        .method.get { background: #c6f6d5; color: #22543d; }
-        .method.post { background: #bee3f8; color: #2a4365; }
-        .method.put { background: #fed7d7; color: #742a2a; }
-        .method.delete { background: #e9d8fd; color: #44337a; }
-        .endpoint-path {
-          font-family: monospace;
-          background: #edf2f7;
-          padding: 8px 15px;
-          border-radius: 5px;
-          margin: 15px 0;
-          display: block;
-          font-size: 1.1rem;
+      }
+    }
+  },
+  components: {
+    schemas: {
+      Item: {
+        type: "object",
+        properties: {
+          _id: { type: "string" },
+          name: { type: "string" },
+          description: { type: "string" },
+          category: { type: "string" },
+          supplier: { type: "string" },
+          stock: { type: "number" },
+          price: { type: "number" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" }
         }
-        .test-btn {
-          background: #4299e1;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-weight: bold;
-          margin-top: 15px;
-          display: inline-block;
-          text-decoration: none;
-          transition: background 0.3s;
-        }
-        .test-btn:hover {
-          background: #3182ce;
-        }
-        footer {
-          text-align: center;
-          padding: 20px;
-          color: #718096;
-          border-top: 1px solid #e2e8f0;
-        }
-        .quick-test {
-          background: #e6fffa;
-          padding: 20px;
-          border-radius: 10px;
-          margin-top: 30px;
-          border: 2px dashed #38b2ac;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <header>
-          <h1>📦 Inventory API Documentation</h1>
-          <p class="subtitle">Complete API reference for inventory management system</p>
-        </header>
-        
-        <div class="content">
-          <!-- Items Endpoints -->
-          <div class="endpoint-card">
-            <h2>📁 Items Management</h2>
-            <div>
-              <span class="method get">GET</span>
-              <span class="endpoint-path">/api/v1/items</span>
-              <p>Get all inventory items</p>
-              <a href="/api/v1/items" class="test-btn" target="_blank">Test Endpoint</a>
-            </div>
-            
-            <div style="margin-top: 20px;">
-              <span class="method post">POST</span>
-              <span class="endpoint-path">/api/v1/items</span>
-              <p>Create new item</p>
-            </div>
-          </div>
-          
-          <!-- Categories Endpoints -->
-          <div class="endpoint-card">
-            <h2>📚 Categories Management</h2>
-            <div>
-              <span class="method get">GET</span>
-              <span class="endpoint-path">/api/v1/categories</span>
-              <p>Get all categories</p>
-              <a href="/api/v1/categories" class="test-btn" target="_blank">Test Endpoint</a>
-            </div>
-            
-            <div style="margin-top: 20px;">
-              <span class="method post">POST</span>
-              <span class="endpoint-path">/api/v1/categories</span>
-              <p>Create new category</p>
-            </div>
-          </div>
-          
-          <!-- Suppliers Endpoints -->
-          <div class="endpoint-card">
-            <h2>🏭 Suppliers Management</h2>
-            <div>
-              <span class="method get">GET</span>
-              <span class="endpoint-path">/api/v1/suppliers</span>
-              <p>Get all suppliers</p>
-              <a href="/api/v1/suppliers" class="test-btn" target="_blank">Test Endpoint</a>
-            </div>
-            
-            <div style="margin-top: 20px;">
-              <span class="method post">POST</span>
-              <span class="endpoint-path">/api/v1/suppliers</span>
-              <p>Create new supplier</p>
-            </div>
-          </div>
-          
-          <!-- Health & Status -->
-          <div class="endpoint-card">
-            <h2>📊 System Status</h2>
-            <div>
-              <span class="method get">GET</span>
-              <span class="endpoint-path">/api/health</span>
-              <p>Check API health and database status</p>
-              <a href="/api/health" class="test-btn" target="_blank">Test Health</a>
-            </div>
-            
-            <div style="margin-top: 20px;">
-              <span class="method get">GET</span>
-              <span class="endpoint-path">/</span>
-              <p>API homepage</p>
-              <a href="/" class="test-btn" target="_blank">Visit Home</a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Quick Test Section -->
-        <div class="quick-test">
-          <h3>🚀 Quick API Test</h3>
-          <p>Test POST request to create an item:</p>
-          <pre style="background: #2d3748; color: white; padding: 15px; border-radius: 5px; margin: 15px 0; overflow-x: auto;">
-// Example JSON for POST /api/v1/items
-{
-  "name": "Laptop",
-  "description": "Gaming laptop",
-  "category": "electronics",
-  "supplier": "tech-supply",
-  "stock": 10,
-  "price": 999.99
-}</pre>
-          <p>Use Postman or curl to test the API endpoints!</p>
-        </div>
-        
-        <footer>
-          <p>Inventory API • Built with Express & MongoDB • Deployed on Vercel</p>
-          <p>📍 Base URL: https://zentinels-inventory-deployment.vercel.app</p>
-        </footer>
-      </div>
-    </body>
-    </html>
-  `);
+      }
+    }
+  }
+};
+
+// Setup Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Also serve swagger.json directly
+app.get("/swagger.json", (req, res) => {
+  res.json(swaggerDocument);
 });
 
 // Health check endpoint
@@ -262,9 +295,8 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
     service: "Inventory API",
     version: "1.0.0",
-    database: mongoUri ? "Configured" : "Not configured",
-    mongodb_status: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-    environment: process.env.NODE_ENV || "development"
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    documentation: "/api-docs"
   });
 });
 
@@ -273,15 +305,13 @@ app.get("/", (req, res) => {
   res.json({
     message: "📦 Inventory Management API",
     version: "1.0.0",
-    status: "active",
-    documentation: "/api-docs",
     endpoints: {
       items: "/api/v1/items",
       categories: "/api/v1/categories",
       suppliers: "/api/v1/suppliers",
+      documentation: "/api-docs",
       health: "/api/health"
-    },
-    try_it: "Visit /api-docs for interactive documentation"
+    }
   });
 });
 

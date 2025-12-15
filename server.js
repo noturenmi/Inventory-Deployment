@@ -14,10 +14,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection - VERCEL OPTIMIZED
+// MongoDB connection
 const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
-
-// Initialize mongoose connection (will connect on first request)
 if (mongoUri) {
   mongoose.connect(mongoUri, {
     useNewUrlParser: true,
@@ -27,8 +25,6 @@ if (mongoUri) {
   }).catch(err => {
     console.error("❌ MongoDB connection error:", err.message);
   });
-} else {
-  console.warn("⚠️  MongoDB URI not found. API will work but without database.");
 }
 
 // Import models
@@ -36,148 +32,258 @@ require("./models/Item");
 require("./models/Category");
 require("./models/Supplier");
 
-// Import routes
-const itemsRouter = require("./routes/items");
-const categoriesRouter = require("./routes/categories");
-const suppliersRouter = require("./routes/suppliers");
-
 // Routes
-app.use("/api/v1/items", itemsRouter);
-app.use("/api/v1/categories", categoriesRouter);
-app.use("/api/v1/suppliers", suppliersRouter);
+app.use("/api/v1/items", require("./routes/items"));
+app.use("/api/v1/categories", require("./routes/categories"));
+app.use("/api/v1/suppliers", require("./routes/suppliers"));
 
-// Health check endpoint (IMPORTANT for Vercel)
+// ========== FIXED SWAGGER SECTION ==========
+// Simple HTML API documentation (no swagger.json file needed!)
+app.get("/api-docs", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>📚 Inventory API Documentation</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          padding: 20px;
+        }
+        .container {
+          max-width: 1200px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 15px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          overflow: hidden;
+        }
+        header {
+          background: #2d3748;
+          color: white;
+          padding: 30px;
+          text-align: center;
+        }
+        h1 {
+          font-size: 2.5rem;
+          margin-bottom: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 15px;
+        }
+        .subtitle {
+          color: #cbd5e0;
+          font-size: 1.1rem;
+        }
+        .content {
+          padding: 40px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 25px;
+        }
+        .endpoint-card {
+          background: #f7fafc;
+          border-radius: 10px;
+          padding: 25px;
+          border-left: 5px solid #4299e1;
+          transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .endpoint-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .method {
+          display: inline-block;
+          padding: 5px 15px;
+          border-radius: 5px;
+          font-weight: bold;
+          font-size: 0.9rem;
+          margin-right: 10px;
+        }
+        .method.get { background: #c6f6d5; color: #22543d; }
+        .method.post { background: #bee3f8; color: #2a4365; }
+        .method.put { background: #fed7d7; color: #742a2a; }
+        .method.delete { background: #e9d8fd; color: #44337a; }
+        .endpoint-path {
+          font-family: monospace;
+          background: #edf2f7;
+          padding: 8px 15px;
+          border-radius: 5px;
+          margin: 15px 0;
+          display: block;
+          font-size: 1.1rem;
+        }
+        .test-btn {
+          background: #4299e1;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: bold;
+          margin-top: 15px;
+          display: inline-block;
+          text-decoration: none;
+          transition: background 0.3s;
+        }
+        .test-btn:hover {
+          background: #3182ce;
+        }
+        footer {
+          text-align: center;
+          padding: 20px;
+          color: #718096;
+          border-top: 1px solid #e2e8f0;
+        }
+        .quick-test {
+          background: #e6fffa;
+          padding: 20px;
+          border-radius: 10px;
+          margin-top: 30px;
+          border: 2px dashed #38b2ac;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <header>
+          <h1>📦 Inventory API Documentation</h1>
+          <p class="subtitle">Complete API reference for inventory management system</p>
+        </header>
+        
+        <div class="content">
+          <!-- Items Endpoints -->
+          <div class="endpoint-card">
+            <h2>📁 Items Management</h2>
+            <div>
+              <span class="method get">GET</span>
+              <span class="endpoint-path">/api/v1/items</span>
+              <p>Get all inventory items</p>
+              <a href="/api/v1/items" class="test-btn" target="_blank">Test Endpoint</a>
+            </div>
+            
+            <div style="margin-top: 20px;">
+              <span class="method post">POST</span>
+              <span class="endpoint-path">/api/v1/items</span>
+              <p>Create new item</p>
+            </div>
+          </div>
+          
+          <!-- Categories Endpoints -->
+          <div class="endpoint-card">
+            <h2>📚 Categories Management</h2>
+            <div>
+              <span class="method get">GET</span>
+              <span class="endpoint-path">/api/v1/categories</span>
+              <p>Get all categories</p>
+              <a href="/api/v1/categories" class="test-btn" target="_blank">Test Endpoint</a>
+            </div>
+            
+            <div style="margin-top: 20px;">
+              <span class="method post">POST</span>
+              <span class="endpoint-path">/api/v1/categories</span>
+              <p>Create new category</p>
+            </div>
+          </div>
+          
+          <!-- Suppliers Endpoints -->
+          <div class="endpoint-card">
+            <h2>🏭 Suppliers Management</h2>
+            <div>
+              <span class="method get">GET</span>
+              <span class="endpoint-path">/api/v1/suppliers</span>
+              <p>Get all suppliers</p>
+              <a href="/api/v1/suppliers" class="test-btn" target="_blank">Test Endpoint</a>
+            </div>
+            
+            <div style="margin-top: 20px;">
+              <span class="method post">POST</span>
+              <span class="endpoint-path">/api/v1/suppliers</span>
+              <p>Create new supplier</p>
+            </div>
+          </div>
+          
+          <!-- Health & Status -->
+          <div class="endpoint-card">
+            <h2>📊 System Status</h2>
+            <div>
+              <span class="method get">GET</span>
+              <span class="endpoint-path">/api/health</span>
+              <p>Check API health and database status</p>
+              <a href="/api/health" class="test-btn" target="_blank">Test Health</a>
+            </div>
+            
+            <div style="margin-top: 20px;">
+              <span class="method get">GET</span>
+              <span class="endpoint-path">/</span>
+              <p>API homepage</p>
+              <a href="/" class="test-btn" target="_blank">Visit Home</a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Quick Test Section -->
+        <div class="quick-test">
+          <h3>🚀 Quick API Test</h3>
+          <p>Test POST request to create an item:</p>
+          <pre style="background: #2d3748; color: white; padding: 15px; border-radius: 5px; margin: 15px 0; overflow-x: auto;">
+// Example JSON for POST /api/v1/items
+{
+  "name": "Laptop",
+  "description": "Gaming laptop",
+  "category": "electronics",
+  "supplier": "tech-supply",
+  "stock": 10,
+  "price": 999.99
+}</pre>
+          <p>Use Postman or curl to test the API endpoints!</p>
+        </div>
+        
+        <footer>
+          <p>Inventory API • Built with Express & MongoDB • Deployed on Vercel</p>
+          <p>📍 Base URL: https://zentinels-inventory-deployment.vercel.app</p>
+        </footer>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// Health check endpoint
 app.get("/api/health", (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
   res.json({
     status: "OK",
     timestamp: new Date().toISOString(),
-    database: dbStatus,
+    service: "Inventory API",
+    version: "1.0.0",
+    database: mongoUri ? "Configured" : "Not configured",
+    mongodb_status: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
     environment: process.env.NODE_ENV || "development"
   });
 });
 
-// Try to load Swagger (with better error handling)
-let swaggerSetup = null;
-try {
-  const swaggerUi = require("swagger-ui-express");
-  const swaggerPath = path.join(__dirname, "swagger", "swagger.json");
-  
-  // Check if file exists
-  if (require("fs").existsSync(swaggerPath)) {
-    const swaggerDocument = require(swaggerPath);
-    swaggerSetup = swaggerUi.setup(swaggerDocument);
-    
-    app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
-      if (!swaggerSetup) return next();
-      return swaggerUi.setup(swaggerDocument)(req, res, next);
-    });
-    
-    app.get("/swagger.json", (req, res) => {
-      res.sendFile(swaggerPath);
-    });
-    
-    console.log("✅ Swagger UI enabled");
-  } else {
-    console.warn("⚠️  swagger.json file not found");
-  }
-} catch (error) {
-  console.log("⚠️  Swagger UI disabled:", error.message);
-}
-
 // Simple homepage
 app.get("/", (req, res) => {
-    res.send(`
-        <html>
-        <head>
-            <title>Inventory API Dashboard</title>
-            <style>
-                body { font-family: Arial, sans-serif; background: #f4f6f9; margin:0; padding:0; }
-                header { background: #2d89ef; color: white; padding: 20px; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
-                h1 { margin:0; font-size:28px; }
-                .container { max-width: 900px; margin:40px auto; padding:20px; }
-                .card { background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 3px 8px rgba(0,0,0,0.1);}
-                .card h2 { color: #2d89ef; margin-top:0;}
-                ul { list-style:none; padding:0;}
-                li { padding:8px 0;}
-                a { color:#2d89ef; font-weight:600; text-decoration:none;}
-                a:hover { text-decoration:underline;}
-                footer { text-align:center; padding:20px; margin-top:40px; color:#777;}
-            </style>
-        </head>
-        <body>
-            <header>
-                <h1>📦 Inventory System API Dashboard</h1>
-                <p>View and test available API endpoints</p>
-            </header>
-
-            <div class="container">
-                <div class="card">
-                    <h2>📁 Items</h2>
-                    <ul>
-                        <li><a href="/api/v1/items">GET /api/v1/items</a></li>
-                        <li>POST /api/v1/items</li>
-                        <li>GET /api/v1/items/:id</li>
-                        <li>PUT /api/v1/items/:id</li>
-                        <li>DELETE /api/v1/items/:id</li>
-                    </ul>
-                </div>
-
-                <div class="card">
-                    <h2>📚 Categories</h2>
-                    <ul>
-                        <li><a href="/api/v1/categories">GET /api/v1/categories</a></li>
-                        <li>POST /api/v1/categories</li>
-                        <li>GET /api/v1/categories/:id</li>
-                        <li>PUT /api/v1/categories/:id</li>
-                        <li>DELETE /api/v1/categories/:id</li>
-                    </ul>
-                </div>
-
-                <div class="card">
-                    <h2>🏭 Suppliers</h2>
-                    <ul>
-                        <li><a href="/api/v1/suppliers">GET /api/v1/suppliers</a></li>
-                        <li>POST /api/v1/suppliers</li>
-                        <li>GET /api/v1/suppliers/:id</li>
-                        <li>PUT /api/v1/suppliers/:id</li>
-                        <li>DELETE /api/v1/suppliers/:id</li>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h2>📘 API Documentation</h2>
-                    <ul>
-                        <li><a href="/api-docs">Open Swagger UI</a></li>
-                        <li><a href="/swagger.json">View Swagger JSON</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <footer>
-                Inventory API © ${new Date().getFullYear()}
-            </footer>
-        </body>
-        </html>
-    `);
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`
+  res.json({
+    message: "📦 Inventory Management API",
+    version: "1.0.0",
+    status: "active",
+    documentation: "/api-docs",
+    endpoints: {
+      items: "/api/v1/items",
+      categories: "/api/v1/categories",
+      suppliers: "/api/v1/suppliers",
+      health: "/api/health"
+    },
+    try_it: "Visit /api-docs for interactive documentation"
   });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: "Internal server error",
-    error: process.env.NODE_ENV === "development" ? err.message : {}
-  });
-});
-
-// For Vercel: Export the app as serverless function
+// Export for Vercel
 module.exports = app;
